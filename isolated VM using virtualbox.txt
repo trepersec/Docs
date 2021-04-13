@@ -1,0 +1,8 @@
+How to setup isolated metasploitable
+
+1) Open virtual box's main menu: File > preferences > network tab
+2) find host only networks
+3) add an interface -- default settings are fine.
+4) enable dhcp or disable for static
+
+https://askubuntu.com/questions/198452/no-host-only-adapter-selected/198467#198467

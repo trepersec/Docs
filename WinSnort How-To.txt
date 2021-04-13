@@ -1,0 +1,409 @@
+Windows Snort Guide w/ barnyard2, pulledpork, mysql, and Apache
+http://www.winsnort.com/tutorials/article/4-installing-an-apache2-web-server-logging-events-to-a-mysql-database/
+
+(1) Download the files in the article and unzip everything
+(2) dism.exe /online /enable-feature /all /featurename:NetFX3 /Source:C:\sources\sxs
+(3) Go into the 'moddler.vbs' file and change the source/location according to environment
+(4) Run Snort_installer
+(5) open up snort > snort -W > snort -V -i [from -W] > if working, ctrl + C
+(6) tartool (or 7zip) C:\[path]\snortrules.snapshot.x.tar.gz C:\Snort
+(7) Run strawberry perl installer
+(8) Move the apache file to C:\Snort\Apache, barnyard2 into C:\Snort\barnyard2, adodb5 into C:\Snort\adodb5, php 
+	to C:\Snort\php
+	Place the seperate module (.so) in the C:\Snort\Apache\modules folder
+(9) Move the base file to C:\Snort\Apache\htdocs\base
+(10) Start mysql installer > "Choosing a setup type" menu--Custom > 
+	"Select Products and Feature"--1. MySQL Servers>MySQL Sever>MySQL Sever 5.7>x64> move to right side
+	2. Select the one item on the right, click advanced options, change directory to C:\Snort\mySQL >
+	next>execute>next>"Type and Networking"--Config Type: Server Machine>next>type password>next>rename service name as MySQL>next>execute>complete>
+	Afterwards, cmd>"copy C:\Snort\mySQL\lib\libmysql.dll C:\Windows\system32"
+(11) In the activators folder, alter the .bat files to your environment. 
+(12) Move the activators folder AND the create-sidmap folder into Snort and then cmd>"perl C:\Snort\create-sidmap\create-sidmap.pl C:\Snort\rules\ > C:\Snort\etc\sid-msg.map"
+(13) Create white_list.rules and black_list.rules by right-clicking or "type NUL > C:\Snort\rules\white_list.rules" && "type NUL > C:\Snort\rules\black_list.rules"
+(14) open snort.conf with a text editor (notepad++)
+	1.	Original Line(s): ipvar HOME_NET any
+		Change to: ipvar HOME_NET 192.168.1.0/24 
+	2.	Original Line(s): var RULE_PATH ../rules
+		Change to: var RULE_PATH C:\Snort\rules 
+	3.	Original Line(s): var SO_RULE_PATH ../so_rules
+		Change to: # var SO_RULE_PATH ../so_rules 
+	4.	Original Line(s): var PREPROC_RULE_PATH ../preproc_rules
+		Change to: var PREPROC_RULE_PATH C:\Snort\preproc_rules 
+	5. 	Original Line(s): var WHITE_LIST_PATH ../rules
+		Change to: var WHITE_LIST_PATH d:\winids\snort\rules
+
+	6.	Original Line(s): var BLACK_LIST_PATH ../rules
+		Change to: var BLACK_LIST_PATH d:\winids\snort\rules
+
+	7.	Original Line(s): dynamicpreprocessor directory /usr/local/lib/snort_dynamicpreprocessor/
+		Change to: dynamicpreprocessor directory d:\winids\snort\lib\snort_dynamicpreprocessor
+
+	8.	Original Line(s): dynamicengine /usr/local/lib/snort_dynamicengine/libsf_engine.so
+		Change to: dynamicengine d:\winids\snort\lib\snort_dynamicengine\sf_engine.dll
+
+	9.	Original Line(s): dynamicdetection directory /usr/local/lib/snort_dynamicrules
+		Change to: # dynamicdetection directory /usr/local/lib/snort_dynamicrules
+
+	10.	Original Line(s):
+		preprocessor normalize_ip4
+		preprocessor normalize_tcp: block, rsv, pad, urp, req_urg, req_pay, req_urp, ips, ecn stream
+		preprocessor normalize_icmp4
+		preprocessor normalize_ip6
+		preprocessor normalize_icmp6
+		Change to:
+		# preprocessor normalize_ip4
+		# preprocessor normalize_tcp: block, rsv, pad, urp, req_urg, req_pay, req_urp, ips, ecn stream
+		# preprocessor normalize_icmp4
+		# preprocessor normalize_ip6
+		# preprocessor normalize_icmp6
+
+	11.	Original Line(s): decompress_swf { deflate lzma } \
+		Change to: decompress_swf { deflate } \
+
+	12.	Original Line(s): # preprocessor sfportscan: proto { all } memcap { 10000000 } sense_level { low }
+		Change to: preprocessor sfportscan: proto { all } memcap { 10000000 } sense_level { low } logfile { \portscan.log }
+
+	13.	Original Line(s): # output unified2: filename merged.log, limit 128, nostamp, mpls_event_types, vlan_event_types
+		Change to: output unified2: filename merged.log, limit 128
+
+	14.	Original Line(s): include classification.config
+		Change to: include d:\winids\snort\etc\classification.config
+
+	15.	Original Line(s): include reference.config
+		Change to: include d:\winids\snort\etc\reference.config
+
+	16.	Original Line(s):
+		# include $PREPROC_RULE_PATH/preprocessor.rules
+		# include $PREPROC_RULE_PATH/decoder.rules
+		# include $PREPROC_RULE_PATH/sensitive-data.rules
+		Change to:
+		include $PREPROC_RULE_PATH/preprocessor.rules
+		include $PREPROC_RULE_PATH/decoder.rules
+		include $PREPROC_RULE_PATH/sensitive-data.rules
+
+	17.	Original Line(s): include threshold.conf
+		Change to: include d:\winids\snort\etc\threshold.conf 
+	SAVE
+(15) cmd>"C:\Snort\bin\snort -c C:\Snort\etc\snort.conf -l C:\Snort\log -i X -T" X = found using snort -W
+(16) copy C:\Snort\php\php.ini-production C:\Snort\php\php.ini
+(17) open C:\Snort\php\php.ini:
+	1.	Original Line(s): max_execution_time = 30
+		Change to: max_execution_time = 60
+
+	2.	Original Line(s): error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT
+		Change to: ; error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT
+
+	3.	Original Line(s): ;include_path = ".;c:\php\includes"
+		Change to: include_path = "C:\Snort\php;C:\Snort\php\pear"
+
+	4.	Original Line(s): ; extension_dir = "ext"
+		Change to: extension_dir = "C:\Snort\php\ext"
+
+	5.	Original Line(s): ; extension=php_gd2.dll
+		Change to: extension=php_gd2.dll
+
+	6.	Original Line(s): ; extension=php_mysql.dll
+		Change to: extension=php_mysql.dll
+
+	7.	Original Line(s): ;date.timezone =
+		Change to: date.timezone = America/Chicago
+	8.	Original Line(s): ;session.save_path = "/tmp"
+		Change to: session.save_path = "C:\Windows\temp"
+	SAVE
+(18) open C:\Snort\Apache\conf\httpd.conf:
+	1.	Original Line(s): ServerRoot "c:/Apache24"
+		Change to: ServerRoot "d:\winids\apache24"
+
+	2.	Original Line(s): Listen 80
+		Change to: Listen winids:80 
+	3. 	Just below the line '#LoadModule xml2enc_module modules/mod_xml2enc.so', add the next line. 
+		LoadModule fcgid_module modules/mod_fcgid.so
+	4.	Original Line(s): #ServerName www.example.com:80
+		Change to: ServerName winids:80
+
+	5.	Original Line(s): DocumentRoot "c:/Apache24/htdocs"
+		Change to: DocumentRoot "d:\winids\apache24\htdocs\base"
+
+	6.	Original Line(s): <Directory "c:/Apache24/htdocs">
+		Change to: <Directory "d:\winids\apache24\htdocs\base">
+
+	7.	Original Line(s): Options Indexes FollowSymLinks
+		Change to: Options -Indexes
+
+	8.	Original Line(s): DirectoryIndex index.html
+		Change to: DirectoryIndex base_main.php
+
+	9.	Original Line(s): ScriptAlias /cgi-bin/ "c:/Apache24/cgi-bin/"
+		Change to: ScriptAlias /cgi-bin/ "d:\winids\apache24\cgi-bin\"
+
+	10.	Original Line(s): <Directory "c:/Apache24/cgi-bin">
+		Change to: <Directory "d:\winids\apache24\cgi-bin">
+
+	11.	Scroll all the way to the bottom of the file and insert the next 26 lines of code:
+
+		<IfModule fcgid_module>
+			FcgidInitialEnv PHPRC "C:\Snort\php"
+			FcgidInitialEnv PATH "C:\Snort\php;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;"
+			FcgidInitialEnv SystemRoot "C:\Windows"
+			FcgidInitialEnv SystemDrive "C:"
+			FcgidInitialEnv TEMP "C:\Windows\Temp"
+			FcgidInitialEnv TMP "C:\Windows\Temp"
+			FcgidInitialEnv windir "C:\Windows"
+			FcgidIOTimeout 40
+			FcgidConnectTimeout 10
+			FcgidMaxProcesses 8
+			FcgidOutputBufferSize 64
+			ProcessLifeTime 0
+			FcgidMaxRequestsPerProcess 0
+			FcgidMinProcessesPerClass 0
+			FcgidMaxProcesses 50
+			FcgidFixPathinfo 0
+			FcgidZombieScanInterval 20
+			FcgidMaxRequestLen 536870912
+			FcgidIOTimeout 120
+
+		  <Files ~ "\.php$">
+			Options Indexes FollowSymLinks ExecCGI
+			AddHandler fcgid-script .php
+			FcgidWrapper "C:/Snort/php/php-cgi.exe" .php
+		  </Files>
+		</IfModule>
+	SAVE
+	
+(19) cmd>"C:\Snort\Apache\bin\httpd.exe -k install"
+	 net start apache2.4
+(20) copy C:\Users\User\Downloads\winids-cssp-x64\test.php C:\Snort\Apache\htdocs\base
+(21) http://winids/test.php
+	if it works > del d:\winids\apache24\htdocs\base\test.php
+(22) snort /SERVICE /INSTALL -c C:\Snort\etc\snort.conf -l C:\Snort\log -i 1
+(23) sc config snortsvc start= auto
+(24) open C:\Snort\mysql\my.ini > find [mysqld] > add "bind-address=127.0.0.1" right under it
+(25) cd C:\Snort\mysql\bin > mysql -u root -p > type password
+	1.	create database snort;
+	2.	create database archive;
+	3.	connect snort;
+	4.	source C:\Snort\barnyard2\schemas\create_mysql
+	5. 	source C:\Snort\Apache\htdocs\base\sql\create_base_tbls_mysql.sql
+	6.  connect archive;
+	7.	source C:\Snort\barnyard2\schemas\create_mysql
+	8. 	source C:\Snort\Apache\htdocs\base\sql\create_base_tbls_mysql.sql
+	9.	grant INSERT,SELECT,UPDATE on snort.* to snort identified by '[input a pass here]';
+	10. grant INSERT,SELECT,UPDATE on snort.* to snort@localhost identified by '[input same^ pass here]';
+	11.	grant INSERT,SELECT,UPDATE,DELETE,CREATE on snort.* to base identified by '[input different pass here]';
+	12. grant INSERT,SELECT,UPDATE,DELETE,CREATE on snort.* to base@localhost identified by '[input same different pass here]';
+	13. grant INSERT,SELECT,UPDATE,DELETE,CREATE on archive.* to base identified by '[same different pass here]';
+	14. grant INSERT,SELECT,UPDATE,DELETE,CREATE on archive.* to base@localhost identified by '[same different pass here]';
+	15. use mysql;
+	QUIT
+(26) Confirming:
+	net stop mysql & net start mysql
+	net start snort
+	task manager > check for snort.exe
+	sc config snortsvc start=auto
+(27) copy C:\Snort\Apache\htdocs\base\base_conf.php.dist C:\Snort\Apache\htdocs\base\base_conf.php
+(28) 7zip the opensource.tar.gz and put it in C:\Snort\Apache\htdocs\base\signatures
+(29) notepad++ C:\Snort\Apache\htdocs\base\base_conf.php
+	1.	Original Line(s): $BASE_urlpath = '';
+		Change to: $BASE_urlpath = 'http://winids';
+
+	2.	Original Line(s): $DBlib_path = '';
+		Change to: $DBlib_path = 'd:\winids\adodb5';
+
+	3.	Original Line(s): $DBtype = '?????';
+		Change to: $DBtype = 'mysql';
+
+	4.	Original Line(s):
+
+		$alert_dbname   = 'snort_log';
+		$alert_host     = 'localhost';
+		$alert_port     = '';
+		$alert_user     = 'snort';
+		$alert_password = 'mypassword';
+
+		Change to:
+
+		$alert_dbname   = 'snort';
+		$alert_host     = 'winids';
+		$alert_port     = '';
+		$alert_user     = 'base';
+		$alert_password = '[different pass]';
+
+
+	5.	Original Line(s):
+
+		$archive_exists   = 0; # Set this to 1 if you have an archive DB
+		$archive_dbname   = 'snort_archive';
+		$archive_host     = 'localhost';
+		$archive_port     = '';
+		$archive_user     = 'snort';
+		$archive_password = 'mypassword';
+
+		Change to:
+
+		$archive_exists   = 1; # Set this to 1 if you have an archive DB
+		$archive_dbname   = 'archive';
+		$archive_host     = 'winids';
+		$archive_port     = '';
+		$archive_user     = 'base';
+		$archive_password = '[different pass]';
+
+
+	6.	Original Line(s): $show_rows = 48;
+		Change to: $show_rows = 90;
+
+	7.	Original Line(s): $show_expanded_query = 0;
+		Change to: $show_expanded_query = 1;
+
+	8.	Original Line(s): $portscan_file = '';
+		Change to: $portscan_file = 'C:\Snort\log\portscan.log';
+
+	9.	Original Line(s): $colored_alerts = 0;
+		Change to: $colored_alerts = 1;
+
+	10.	Original Line(s): $priority_colors = array ('FF0000','FFFF00','FF9900','999999','FFFFFF','006600');
+		Change to: $priority_colors = array('000000','FF0000','FF9900','FFFF00','999999');
+
+	11.	Original Line(s): $graph_font_name = "DejaVuSans";
+		Change to: // $graph_font_name = "DejaVuSans";
+
+	12.	Original Line(s):// $graph_font_name = "";
+		Change to: $graph_font_name = "";
+
+	13.	Original Line(s): //$Geo_IPfree_file_ascii = "/var/www/html/ips-ascii.txt";
+		Change to: $Geo_IPfree_file_ascii = "C:\Snort\Apache\htdocs\base\ips-ascii.txt"; 
+	SAVE
+	
+(30) Move C:\Users\User\Downloads\winids-cssp-x64\go-pear.phar to C:\Snort\php
+(31) cd C:\Snort\php
+	1.	php go-pear.phar
+	2.	click enter through the wizard
+	3.	pear install -f --alldeps image_graph mail mail_mime
+	4.	C:\Snort\Apache\htdocs\base\world_map6.* C:\Snort\php\pear\Image\Graph\Images\Maps
+(32) notepad++ C:\Snort\barnyard2\etc\barnyard2.conf
+	1.	Original Line(s):
+
+		config reference_file:      /etc/snort/reference.config
+		config classification_file: /etc/snort/classification.config
+		config gen_file:            /etc/snort/gen-msg.map
+		config sid_file:            /etc/snort/sid-msg.map
+
+		Change to:
+
+		config reference_file:      C:\Snort\etc\reference.config
+		config classification_file: C:\Snort\etc\classification.config
+		config gen_file:            C:\Snort\etc\gen-msg.map
+		config sid_file:            C:\Snort\etc\sid-msg.map
+
+
+	2.	Original Line(s): # config event_cache_size: 4096
+		Change to: config event_cache_size: 32768
+
+	3.	Original Line(s): #output database: log, mysql, user=root password=test dbname=db host=localhost
+		Change to: output database: log, mysql, user=snort password=l0gg3r dbname=snort host=winids sensor_name=WinIDS-Home
+	SAVE
+	
+(33) C:\Snort\activators\by2-test
+
+(34) notepad++ C:\Users\User\Downloads\winids-cssp-x64\auto-local-barnyard2
+	Change according to environment
+	cmd>C:\Users\User\Downloads\winids-cssp-x64\auto-local-barnyard2.reg
+	
+(35) RESTART
+(36) http://winids to confirm
+
+http://www.winsnort.com/tutorials/article/8-installing-master-sensor-rule-management-using-pulledpork/
+(37) cmd>xcopy /E /I C:\Snort C:\Snort-Old
+(38) Download the pulledpork requirements
+(39) 7zip stuff and put pulledpork in C:\Snort\pulledpork
+(40) cmd> 
+	1.	cpan install Sys::Syslog
+	2.	del C:\Snort\rules\*.* /Q
+	3.	rd C:\Snort\so_rules /S /Q
+	4.	rd C:\Snort\preproc_rules /S /Q
+	5.	xcopy C:\Snort-Old\rules\*_list.* C:\Snort\rules /Q /Y
+	6.	xcopy C:\Snort-Old\rules\local.* C:\Snort\rules /Q /Y
+	7.	xcopy C:\Snort-Old\rules\experimental.* C:\Snort\rules /Q /Y
+	8.	del C:\Snort\Apache\htdocs\base\signatures\*.* /Q
+(41) notepad++ C:\Snort\etc\snort.conf
+	1.	Original: var PREPROC_RULE_PATH C:\Snort\preproc_rules
+		Change to: # var PREPROC_RULE_PATH C:\Snort\preproc_rules
+	2. 	replace ALL the 'include $RULE_PATH/...' lines with 
+		include $RULE_PATH/experimental.rules
+		include $RULE_PATH/local.rules
+		include $RULE_PATH/snort.rules
+	3.	 Original Line(s):
+
+		include $PREPROC_RULE_PATH/preprocessor.rules
+		include $PREPROC_RULE_PATH/decoder.rules
+		include $PREPROC_RULE_PATH/sensitive-data.rules
+
+		Change to:
+
+		# include $PREPROC_RULE_PATH/preprocessor.rules
+		# include $PREPROC_RULE_PATH/decoder.rules
+		# include $PREPROC_RULE_PATH/sensitive-data.rules
+	SAVE
+(42) mkdir C:\Snort\pulledpork\temp
+(43) notepad++ C:\Snort\pulledpork\etc\pulledpork.conf
+	1.	Original Line(s): rule_url=https://www.snort.org/reg-rules/|snortrules-snapshot.tar.gz|<oinkcode>
+		Change to: rule_url=https://www.snort.org/reg-rules/|snortrules-snapshot.tar.gz|insert your unique oinkcode
+
+	2.	Original Line(s): rule_url=https://snort.org/downloads/community/|community-rules.tar.gz|Community
+		Change to: # rule_url=https://snort.org/downloads/community/|community-rules.tar.gz|Community
+
+	3.	Original Line(s): temp_path=/tmp
+		Change to: temp_path=d:\winids\pulledpork\temp
+
+	4.	Original Line(s): rule_path=/usr/local/etc/snort/rules/snort.rules
+		Change to: rule_path=d:\winids\snort\rules\winids.rules
+
+	5.	Original Line(s): local_rules=/usr/local/etc/snort/rules/local.rules
+		Change to: local_rules=d:\winids\snort\rules\local.rules
+
+	6.	Original Line(s): sid_msg=/usr/local/etc/snort/sid-msg.map
+		Change to: sid_msg=d:\winids\snort\etc\sid-msg.map
+
+	7.	Original Line(s): sid_changelog=/var/log/sid_changes.log
+		Change to: sid_changelog=d:\winids\snort\log\sid_changes.log
+
+	8.	Original Line(s): black_list=/usr/local/etc/snort/rules/iplists/default.blacklist
+		Change to: # black_list=/usr/local/etc/snort/rules/iplists/default.blacklist
+
+	9.	Original Line(s): IPRVersion=/usr/local/etc/snort/rules/iplists
+		Change to: # IPRVersion=/usr/local/etc/snort/rules/iplists
+
+	10.	Original Line(s): snort_control=/usr/local/bin/snort_control
+		Change to: # snort_control=/usr/local/bin/snort_control
+
+	12.	Original Line(s): # docs=/path/to/base/www
+		Apache install change to: docs=d:\winids\Apache24\htdocs\base\signatures\
+
+	13.	Original Line(s): # snort_version=2.9.11.0
+		Change to: snort_version=x.x.x.x
+	14.	Original Line(s):
+
+		# enablesid=/usr/local/etc/snort/enablesid.conf
+		# dropsid=/usr/local/etc/snort/dropsid.conf
+		# disablesid=/usr/local/etc/snort/disablesid.conf
+		# modifysid=/usr/local/etc/snort/modifysid.conf
+
+		Change to:
+
+		enablesid=C:\Snort\pulledpork\etc\enablesid.conf
+		dropsid=C:\Snort\pulledpork\etc\dropsid.conf
+		disablesid=C:\Snort\pulledpork\etc\disablesid.conf
+		modifysid=C:\Snort\pulledpork\etc\modifysid.conf
+
+	15.	Original Line(s): # ips_policy=security
+		Change to: ips_policy=security 
+		****   "security" can be replaced here based off needs" **********************************
+		 Connectivity: Means "Connectivity over Security". Meaning this is a speedy policy for people that insist on blocking only the really known bad with no false positives.
+		 Balanced: Means "Balanced between Connectivity and Security". Meaning that this is a good starter policy for everyone. It's quick, has a good base coverage level, and covers the latest threats of the day. The policy contains everything that is in Connectivity.
+		 Security: Means "Security over Connectivity". Meaning that this is a stringent policy that everyone should strive to get to through tuning. It's quick, but has some policy-type rules in it. Rules that will alert on Flash contained within an Excel file and things like that. This policy contains everything that is in Connectivity, and Balanced.
+	SAVE
+	
+(44) perl C:\Snort\pulledpork\pulledpork.pl -c C:\Snort\pulledpork\etc\pulledpork.conf -T 
+	takes 15-45 minutes
+(45) C:\Snort\bin\snort -c C:\Snort\etc\snort.conf -l C:\Snort\log -i 1
+(46) net stop snort & net start snort
+(47) http://winids

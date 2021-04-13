@@ -1,0 +1,19 @@
+Grafana:
+	- Grafana is most similar to Kibana, in that it's a front-end for the stack it's serving (it was essentially built to be the Kibana for metrics), but they're not comparable products.
+TICK Stack:
+	- Works with dockers and kubernetes
+	- visualization
+	- used for different purpose than ELK stack. ELK used for logs, individual events while TICK stack is used for metrics
+	- can implement to send metrics to ELK
+	- store numeric time-series data
+Prometheus: nope
+	- does not log or not scalable
+	
+Opentsdb: (found through grafana
+	- scalable (runs on hadoop and hbase)
+	- visualization- 
+
+Graphite:
+	- store numeric time-series data
+Collectd:
+	- Unix daemon that collects, transfers and stores performance data of computers and network equipment

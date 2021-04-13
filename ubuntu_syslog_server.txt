@@ -1,0 +1,88 @@
+Sources:
+(main source) https://www.server-world.info/en/note?os=Ubuntu_16.04&p=rsyslog
+(for log rotation) https://du5tin.com/2017/06/10/set-up-syslog-server-in-ubuntu-server-16-04-w-log-rotation/
+(cross reference) https://fabianlee.org/2017/05/24/ubuntu-enabling-syslog-on-ubuntu-and-custom-templates/
+(cross reference for log rotation) https://www.digitalocean.com/community/tutorials/how-to-manage-logfiles-with-logrotate-on-ubuntu-16-04
+
+
+
+user: $user
+password: $password
+
+~~ I did not run apt update or apt upgrade in case any updates would not work in the environment ~~
+
+
+1) backup original clean syslog config
+
+#  cp /etc/rsyslog.conf /etc/rsyslogORIGINAL.conf
+
+2) edit rsyslog.conf
+
+# nano /etc/rsyslog.conf
+
+2.1 ) comment out the following lines to look like:
+
+# provides UDP syslog reception
+module(load="imudp")
+input(type="imudp" port="514")
+
+# provides TCP syslog reception
+module(load="imtcp")
+input(type="imtcp" port="514")
+
+2.2) add the source hosts by appending the folloiwng to /etc/rsyslog.conf immediately after the above stuff
+
+$AllowedSender TCP, 127.0.0.1, 10.0.0.0/24, *.srv.world
+
+2.3) Restart syslog
+#service rsyslog restart
+
+3) configure client servers (i used an ubuntu client). THIS IS A SEPERATE VM, NOT THE SYSLOG SERVER
+
+# sudo vi /etc/rsyslog.d/50-default.conf
+
+3.1) append the following
+
+# add to the end (settings for when Rsyslog Server would be down)
+$ActionQueueFileName queue
+$ActionQueueMaxDiskSpace 1g
+$ActionQueueSaveOnShutdown on
+$ActionQueueType LinkedList
+$ActionResumeRetryCount -1
+
+3.2) poweroff VM
+
+4) restart and check service (on syslog server)
+# sudo service rsyslog restart
+# sudo journalctl -u rsyslog														# look for lines of the system logging service stopping and starting
+# netstat -an | grep "LISTEN "													
+# should be 2 lines listening on port 514
+
+4.1) [OPTIONAL] sending a test message using netcat (on syslog server)
+# nc -w0 localhost 514 <<< "<14>TCP User Info msg from `hostname` on `date`"		# this is using tcp by default
+# nc -w0 -u localhost 514 <<< "<14>UDP User Info msg from `hostname` on `date`"		# adding option "-u" to use udp
+# tail /var/log/syslog 																# should see two lines of the strings used above ^
+
+5) Power on client VM, login, and tail auth on syslog server
+# tail /var/log/auth.log
+
+6) Installing xfce4
+# sudo apt update
+# sudo apt install xcfe4
+# sudo startxfce4
+
+
+Tip #1) How to clear syslogs:
+# > /var/log/auth
+
+Tip #2) When I exported and imported the ova/ovf from my home network to a different network, the network interface on the server changed from ens33 to enp0s17. To fix:
+# ip a 								# mark the interface name
+# ip addr flush enp0s17				# change interface name accordingly
+# sudo vi /etc/network/interfaces	# change the interface name to the current one
+# systemctl restart networking.service
+# ip a 								# should have an ip now
+
+Tip #3) Had an error doing $(apt update), "The repository 'cdrom://Ubuntu 16.04 LTS _Xenial Xerus_ - Release amd64 (20160420.1) xenial Release' does not have a Release file". To fix... You have the comment out the cdrom repository
+
+# sudo vi /etc/apt/sources.list
+Comment "deb cdrom:" line (line 5 for me)

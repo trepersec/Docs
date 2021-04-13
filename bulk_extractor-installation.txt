@@ -1,0 +1,15 @@
+Bulk_extractor - https://github.com/simsong/bulk_extractor/
+
+1) git clone https://github.com/simsong/bulk_extractor.git ~/Desktop/bulk_extractor
+
+2) $ sudo apt install build-essential
+
+3) $ cd ~/Desktop/bulk_extractor/etc; bash ./CONFIGURE_UBUNTU*.bash
+
+4) More stuff
+chmod +x bootstrap.sh
+./bootstrap.sh
+
+5) build source 
+./configure
+make && sudo make install

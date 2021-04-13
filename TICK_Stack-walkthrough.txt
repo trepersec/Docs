@@ -1,0 +1,108 @@
+TICK Stack on Ubuntu
+Source: https://www.digitalocean.com/community/tutorials/how-to-monitor-system-metrics-with-the-tick-stack-on-ubuntu-16-04
+
+Telegraf collects time-series data from a variety of sources.
+InfluxDB stores time-series data.
+Chronograf visualizes and graphs the time-series data.
+Kapacitor provides alerting and detects anomalies in time-series data
+
+TICK Stack - collects, stores, graphs, and alerts on time series data 
+A time series is simply any set of values with a timestamp where time is a meaningful component of the data
+Run on Linux and experimental on Windows
+Similar to ELK stack
+Handle metrics and events. “Server monitoring and app performance monitoring is one big use case. People use it for real-time analytics. We’ve seen people in finance build real-time risk dashboards. The other one is sensor data for IoT,” 
+
+0) apt install sendmail
+
+Step 1 -  Adding the TICK Stack Repository
+
+# curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -
+# source /etc/lsb-release
+# echo "deb https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
+# sudo apt-get update
+
+Step 2 — Installing InfluxDB and Configuring Authentication
+
+# sudo apt-get install influxdb
+# sudo systemctl start influxdb
+# systemctl status influxdb #verify it's running
+# influx
+# CREATE USER "pcip" WITH PASSWORD 'pcip' WITH ALL PRIVILEGES
+# show users #very the user "pcip" with the password "pcip" is created with the "true" value set
+# exit
+# sudo vi /etc/influxdb/influxdb.conf
+- Locate the [http] section, uncomment the auth-enabled option, and set its value to true 
+ [http]
+      # Determines whether HTTP endpoint is enabled.
+      # enabled = true
+
+      # The bind address used by the HTTP service.
+      # bind-address = ":8086"
+
+      # Determines whether HTTP authentication is enabled.
+      auth-enabled = true
+# sudo systemctl restart influxdb
+
+Step 3 — Installing and Configuring Telegraf
+# sudo apt-get install telegraf
+# sudo vi /etc/telegraf/telegraf.conf
+- Locate the [outputs.influxdb] section and provide the username and password
+[[outputs.influxdb]]
+      ## The full HTTP or UDP endpoint URL for your InfluxDB instance.
+      ## Multiple urls can be specified as part of the same cluster,
+      ## this means that only ONE of the urls will be written to each interval.
+      # urls = ["udp://localhost:8089"] # UDP endpoint example
+      urls = ["http://localhost:8086"] # required
+      ## The target database for metrics (telegraf will create it if not exists).
+      database = "telegraf" # required
+
+      ...
+
+      ## Write timeout (for the InfluxDB client), formatted as a string.
+      ## If not provided, will default to 5s. 0s means no timeout (not recommended).
+      timeout = "5s"
+      username = "sammy"
+      password = "sammy_admin"
+      ## Set the user agent for HTTP POSTs (can be useful for log differentiation)
+      # user_agent = "telegraf"
+      ## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)
+      # udp_payload = 512
+# exit
+# systemctl status telegraf #verify it's running
+[OPTIONAL to see what plugins you have]
+# influx -username 'pcip' -password 'pcip'
+# show databases
+# use telegraf
+# show measurements
+- This is your current plugins
+# exit
+
+Step 4 — Installing Kapacitor
+
+# sudo apt-get install kapacitor
+# sudo vi /etc/kapacitor/kapacitor.conf
+- Locate the [[influxdb]] section and provide the username and password to connect to the InfluxDB database
+[[influxdb]]
+  # Connect to an InfluxDB cluster
+  # Kapacitor can subscribe, query and write to this cluster.
+  # Using InfluxDB is not required and can be disabled.
+  enabled = true
+  default = true
+  name = "localhost"
+  urls = ["http://localhost:8086"]
+  username = "sammy"
+  password = "sammy_admin"
+# sudo systemctl start kapacitor
+# kapacitor list tasks #verify it's up
+
+Step 5 — Installing and Configuring Chronograf
+- Go to https://portal.influxdata.com/downloads and choose your respective downloads
+- In browser: # localhost:8888
+- Enter username and password previously defined in influxDB
+- On the side panel, select "Host List" and add the available host and the dashboard should automatically populate
+- On the side panel, select "Configuration" and click "Connect Kapacitor" with the default settings (no user/pass) 
+- Go down to SMTP and add "root@localhost" just to set it up
+
+Step 6 - Set up test rule
+- Click the exclamation mark titled, "Alerting" and create a new rule.
+- Name it "#1 - High CPU Usuage" or whatever you want > Select "telegraf.autogen" > system > load1 > graph appears in the below pane > add "0.8" (or whatever value) in the "Send Alert where load1 is greater than" field > add "{{ .ID }} is {{ .Level }} value: {{ index .Fields "value" }}" in the message field below > then select the alert handler in the drop down menu "email" or "smtp" > save rule

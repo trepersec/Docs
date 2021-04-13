@@ -1,0 +1,11 @@
+TCPflow - https://github.com/simsong/tcpflow
+
+1) git clone https://github.com/simsong/tcpflow.git
+
+2) cd tcpflow/
+3) sudo apt install libboost-dev -y
+4) ./bootstrap.sh
+
+5) build:
+./configure
+make && sudo make install

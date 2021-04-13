@@ -1,0 +1,40 @@
+Set up remote desktop on Mac
+
+Source: https://support.apple.com/kb/ph25556?locale=en_US
+Version: MacOS 10.14
+
+Steps:
+
+1) Apple Icon (top left corner) 
+2) System Prefernces
+3) Sharing icon (third row, last option)
+4) Select "Remote Management" on the left column
+    - For simple SSH terminal window, instead of doing Remote Manangement, do "Remote Login".
+5) Select "Computer Settings" > Select the checkbox "VNC viewers may control screen with password:" and give it a password > Select OK
+6) Now connect with your favorite remote desktop program (I like "mRemoteNG")
+
+Done! For some..
+
+/* If VNC does not work for you--as it didn't for me--then please continue below.
+    I don't understand why this didn't work for me because a lot of the videos and 
+    guides told me this was the way. But I tried three different VNC softwares,
+    two different RDP softwares, and even set the port numbers with the IP address,
+    but they all failed. SSH works, but I want a GUI. So here's the fix below. */
+
+Source: https://serverfault.com/questions/120559/vnc-viewer-not-connecting-to-mac-from-windows
+
+1. Basically, run this line of code and along with the previous settings and it'll work:
+    sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -off -restart -agent -privs -all -allowAccessFor -allUsers -clientopts -setvncpw -vncpw <your password to initiate the connection> -setvnclegacy -vnclegacy yes
+
+    /* Kickstar is Mac's command-line utility for their built in Remote Desktop. Above is a
+        series of options that are similar to what we did through the settings but you do 
+        need the Remote Management enabled to access it.
+
+        The parameter "<your password to initiate the connection>" must be replaced with
+        your assigned password */
+
+Caveat 1: If this is working for you congrats! It is important to note that if you disable the "VNC viewers may control..." checkbox or "Remote Management" checkbox, it will still work without having to reuse the command above. However, the password you set in the "VNC viewers may control..." will now be the password used instead of the password you used in the command-line command.
+Caveat 2: If you have any issues after connecting with VNC (i.e. password input is stuck on loading), restarting the Mac worked for me.
+
+Done!
+

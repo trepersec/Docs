@@ -1,0 +1,640 @@
+Sysinternals Suite
+
+1) AccessChk CLI
+	- Check user/groups permissions
+	- Ex:
+		"accesschk64.exe C:\"
+	Output:
+	{
+		C:\PerfLogs
+		Error getting secu
+		Access is denied.
+		C:\Program Files
+		  RW NT SERVICE\Trus
+		  RW NT AUTHORITY\SY
+		  RW BUILTIN\Adminis
+		  R  BUILTIN\Users
+		C:\Program Files (x8
+		  RW NT SERVICE\Trus
+		  RW NT AUTHORITY\SY
+		  RW BUILTIN\Adminis
+		  R  BUILTIN\Users
+		C:\ProgramData
+		  RW NT AUTHORITY\SY
+		  RW BUILTIN\Adminis
+		  RW BUILTIN\Users
+		C:\System Recovery
+		  Error getting secu
+		  Access is denied.
+		C:\System Volume Inf
+		  Error getting secu
+		  Access is denied.
+		C:\Temp
+		  RW BUILTIN\Adminis
+		  RW NT AUTHORITY\SY
+		  R  BUILTIN\Users
+		  RW NT AUTHORITY\Au
+		C:\Users
+		  RW NT AUTHORITY\SY
+		  RW BUILTIN\Adminis
+		  R  BUILTIN\Users
+		  R  Everyone
+		C:\Windows
+		  RW NT SERVICE\Trus
+		  RW NT AUTHORITY\SY
+		  RW BUILTIN\Adminis
+		  R  BUILTIN\Users
+	}
+	
+2) AccessEnum GUI
+	- Scans host to view and manage permissions
+
+3) AdExplorer GUI
+	- Active Directory viewer and editor
+
+4) AdInsight GUI
+	- LDAP (lightweight directory access protocol) real-time monitoring tool used to troubleshoot active directory client apps.
+
+5) 	Adrestore
+	- finds and returns deleted domain objects
+	- Ex:
+		adrestore.exe
+	Output:
+	{
+		Enumerating Domain deleted Objects:
+		Found 0 items matching search criteria
+	}
+
+6)	Autologon GUI
+	- auto log in with provided credentials while encrypting provided parameters
+
+7) Autoruns GUI & CLI
+	- Reports auto-starting programs and their locations
+	- Ex:
+		autorunsc64.exe
+	Output:
+	{
+	HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit
+   C:\Windows\system32\userinit.exe
+     C:\Windows\system32\userinit.exe
+     Userinit Logon Application
+     Microsoft Corporation
+     6.1.7601.17514
+     c:\windows\system32\userinit.exe
+     11/20/2010 5:10 AM
+
+HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\VmApplet
+   SystemPropertiesPerformance.exe
+     SystemPropertiesPerformance.exe
+     Change Computer Performance Settings
+     Microsoft Corporation
+     6.1.7600.16385
+     c:\windows\system32\systempropertiesperformance.exe
+     7/13/2009 6:56 PM
+
+HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Shell
+   explorer.exe
+     explorer.exe
+     Windows Explorer
+     Microsoft Corporation
+     6.1.7601.23537
+     c:\windows\explorer.exe
+     8/29/2016 10:04 AM
+
+HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\AlternateShell
+   cmd.exe
+     cmd.exe
+     Windows Command Processor
+     Microsoft Corporation
+     6.1.7601.17514
+     c:\windows\system32\cmd.exe
+     11/20/2010 4:46 AM
+
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+   DellPoaEvents
+     C:\Program Files\Dell\PPO\DellPoaEvents.exe
+     Dell Precision Optimizer Event Handler
+     Dell Inc.
+     3.5.2.0
+     c:\program files\dell\ppo\dellpoaevents.exe
+     1/18/2016 6:15 PM
+   RtHDVCpl
+     "C:\Program Files\Realtek\Audio\HDA\RtkNGUI64.exe" /s
+     Realtek HD Audio Manager
+     Realtek Semiconductor
+     1.0.516.0
+     c:\program files\realtek\audio\hda\rtkngui64.exe
+     12/2/2015 2:48 AM
+   RtHDVBg
+     "C:\Program Files\Realtek\Audio\HDA\RAVBg64.exe" /MAXX5REC
+     HD Audio Background Process
+     Realtek Semiconductor
+     1.0.0.225
+     c:\program files\realtek\audio\hda\ravbg64.exe
+     9/2/2015 6:34 AM
+   WavesSvc
+     "C:\Program Files\Waves\MaxxAudio\WavesSvc64.exe"
+     Waves MaxxAudio Service Application
+     Waves Audio Ltd.
+     1.11.6.0
+     c:\program files\waves\maxxaudio\wavessvc64.exe
+     11/26/2015 2:55 AM
+   IAStorIcon
+     "C:\Program Files\Intel\Intel(R) Rapid Storage Technology\IAStorIconLaunch.
+exe" "C:\Program Files\Intel\Intel(R) Rapid Storage Technology\IAStorIcon.exe" 6
+0
+     Delayed launcher
+     Intel Corporation
+     1.0.0.1
+     c:\program files\intel\intel(r) rapid storage technology\iastoriconlaunch.e
+xe
+     5/28/2014 12:11 PM
+   Apoint
+     "C:\Program Files\DellTPad\Apoint.exe"
+     Alps Pointing-device Driver
+     Alps Electric Co., Ltd.
+     10.1.101.207
+     c:\program files\delltpad\apoint.exe
+     5/29/2015 3:14 AM
+
+HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Run
+   StartCCC
+     "c:\Program Files (x86)\ATI Technologies\ATI.ACE\Core-Static\amd64\CLIStart
+.exe" MSRun
+     Catalystr Control Center Launcher
+     Advanced Micro Devices, Inc.
+     3.5.0.0
+     c:\program files (x86)\ati technologies\ati.ace\core-static\amd64\clistart.
+exe
+     11/30/2015 12:29 AM
+   USB3MON
+     "C:\Program Files (x86)\Intel\Intel(R) USB 3.0 eXtensible Host Controller D
+river\Application\iusb3mon.exe"
+     iusb3mon
+     Intel Corporation
+     2.5.4.40
+     c:\program files (x86)\intel\intel(r) usb 3.0 extensible host controller dr
+iver\application\iusb3mon.exe
+     3/26/2014 6:08 AM
+   Adobe ARM
+     "C:\Program Files (x86)\Common Files\Adobe\ARM\1.0\AdobeARM.exe"
+     Adobe Reader and Acrobat Manager
+     Adobe Systems Incorporated
+     1.7.0.0
+     c:\program files (x86)\common files\adobe\arm\1.0\adobearm.exe
+     9/20/2012 3:16 PM
+   vmware-tray.exe
+     "C:\Program Files (x86)\VMware\VMware Workstation\vmware-tray.exe"
+     VMware Tray Process
+     VMware, Inc.
+     14.1.1.28517
+     c:\program files (x86)\vmware\vmware workstation\vmware-tray.exe
+     1/8/2018 5:15 AM
+
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce
+   dcu-oobe
+     C:\Program Files (x86)\Dell\CommandUpdate\OobeSetup.exe -task
+     Out of Box Experience Setup
+     Dell Inc.
+     2.2.0.49
+     c:\program files (x86)\dell\commandupdate\oobesetup.exe
+     6/7/2016 6:32 PM
+
+HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components
+   Microsoft Windows Media Player
+     %SystemRoot%\system32\unregmp2.exe /ShowWMP
+     Microsoft Windows Media Player Setup Utility
+     Microsoft Corporation
+     12.0.7600.16385
+     c:\windows\system32\unregmp2.exe
+     7/13/2009 7:23 PM
+   Themes Setup
+     %SystemRoot%\system32\regsvr32.exe /s /n /i:/UserInstall %SystemRoot%\syste
+m32\themeui.dll
+     Microsoft(C) Register Server
+     Microsoft Corporation
+     6.1.7600.16385
+     c:\windows\system32\regsvr32.exe
+     7/13/2009 7:14 PM
+   Microsoft Windows
+     "%ProgramFiles%\Windows Mail\WinMail.exe" OCInstallUserConfigOE
+     Windows Mail
+     Microsoft Corporation
+     6.1.7600.16385
+     c:\program files\windows mail\winmail.exe
+     7/13/2009 6:58 PM
+   Enable TLS1.1 and 1.2
+     C:\Windows\System32\ie4uinit.exe -EnableTLS
+     IE Per-User Initialization Utility
+     Microsoft Corporation
+     11.0.9600.19003
+     c:\windows\system32\ie4uinit.exe
+     4/22/2018 1:49 AM
+   Microsoft Windows Media Player
+     %SystemRoot%\system32\unregmp2.exe /FirstLogon /Shortcuts /RegBrowsers /Res
+etMUI
+     Microsoft Windows Media Player Setup Utility
+     Microsoft Corporation
+     12.0.7600.16385
+     c:\windows\system32\unregmp2.exe
+     7/13/2009 7:23 PM
+   Disable SSL3
+     C:\Windows\System32\ie4uinit.exe -DisableSSL3
+     IE Per-User Initialization Utility
+     Microsoft Corporation
+     11.0.9600.19003
+     c:\windows\system32\ie4uinit.exe
+     4/22/2018 1:49 AM
+   Windows Desktop Update
+     regsvr32.exe /s /n /i:U shell32.dll
+     Microsoft(C) Register Server
+     Microsoft Corporation
+     6.1.7600.16385
+     c:\windows\system32\regsvr32.exe
+     7/13/2009 7:14 PM
+   Web Platform Customizations
+     C:\Windows\System32\ie4uinit.exe -UserConfig
+     IE Per-User Initialization Utility
+     Microsoft Corporation
+     11.0.9600.19003
+     c:\windows\system32\ie4uinit.exe
+     4/22/2018 1:49 AM
+   n/a
+     C:\Windows\system32\Rundll32.exe C:\Windows\system32\mscories.dll,Install
+     Windows host process (Rundll32)
+     Microsoft Corporation
+     6.1.7601.23755
+     c:\windows\system32\rundll32.exe
+     3/30/2017 10:03 AM
+
+HKLM\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components
+   Microsoft Windows Media Player
+     %SystemRoot%\system32\unregmp2.exe /ShowWMP
+     Microsoft Windows Media Player Setup Utility
+     Microsoft Corporation
+     12.0.7600.16385
+     c:\windows\syswow64\unregmp2.exe
+     7/13/2009 7:09 PM
+   Themes Setup
+     %SystemRoot%\system32\regsvr32.exe /s /n /i:/UserInstall %SystemRoot%\syste
+m32\themeui.dll
+     Microsoft(C) Register Server
+     Microsoft Corporation
+     6.1.7600.16385
+     c:\windows\syswow64\regsvr32.exe
+     7/13/2009 6:58 PM
+   Microsoft Windows
+     "%ProgramFiles(x86)%\Windows Mail\WinMail.exe" OCInstallUserConfigOE
+     Windows Mail
+     Microsoft Corporation
+     6.1.7600.16385
+     c:\program files (x86)\windows mail\winmail.exe
+     7/13/2009 6:42 PM
+   Microsoft Windows Media Player
+     %SystemRoot%\system32\unregmp2.exe /FirstLogon /Shortcuts /RegBrowsers /Res
+etMUI
+     Microsoft Windows Media Player Setup Utility
+     Microsoft Corporation
+     12.0.7600.16385
+     c:\windows\syswow64\unregmp2.exe
+     7/13/2009 7:09 PM
+   Windows Desktop Update
+     regsvr32.exe /s /n /i:U shell32.dll
+     Microsoft(C) Register Server
+     Microsoft Corporation
+     6.1.7600.16385
+     c:\windows\syswow64\regsvr32.exe
+     7/13/2009 6:58 PM
+   n/a
+     C:\Windows\SysWOW64\Rundll32.exe C:\Windows\SysWOW64\mscories.dll,Install
+     Windows host process (Rundll32)
+     Microsoft Corporation
+     6.1.7601.23755
+     c:\windows\syswow64\rundll32.exe
+     3/30/2017 9:58 AM
+
+HKLM\Software\Microsoft\Windows NT\CurrentVersion\Windows\IconServiceLib
+   IconCodecService.dll
+     IconCodecService.dll
+     Converts a PNG part of the icon to a legacy bmp icon
+     Microsoft Corporation
+     6.1.7600.16385
+     c:\windows\system32\iconcodecservice.dll
+     7/13/2009 8:28 PM
+	 }
+
+8) BGInfo GUI
+	- displays computer information to desktop
+
+9) Cacheset GUI
+	- manipulate cache usage
+	
+10) Clockres CLI
+	- display clock resolution 
+	- Ex: 
+		clockres64.exe
+	Output:
+	{
+	Maximum timer interval: 15.600 ms
+	Minimum timer interval: 0.500 ms
+	Current timer interval: 10.000 ms
+	}
+	
+11) Contig CLI 
+	- defragments a file to optimize execution
+	
+	- Ex:
+		contig64.exe -f -v C:\
+		
+	Output:
+	{
+	...
+	98519587: 783
+	98520371: 1
+	98520418: 30
+	98520720: 180
+	98520948: 31
+	98520995: 6
+	98521003: 1
+	98521048: 35
+	98521099: 144
+	98521259: 32
+	98521307: 48
+	98521435: 44
+	98521671: 136
+	98521836: 600
+	98522452: 8
+	98522717: 12910
+	98539724: 1288
+	98899844: 5137
+	98905420: 4
+	98905555: 81151788
+	Summary:
+     Free cluster space          : 443721900032 bytes
+     Free space fragments        : 98716 frags
+     Largest free space block    : 332397723648 bytes
+	}
+	
+12) Coreinfo CLI
+	- displays map between logical and physical processors
+	- Ex:
+		coreinfo.exe
+	Output:
+	{
+	Intel(R) Core(TM) i7-4810MQ CPU @ 2.80GHz
+Intel64 Family 6 Model 60 Stepping 3, GenuineIntel
+Microcode signature: 0000001C
+HTT             *       Hyperthreading enabled
+HYPERVISOR      -       Hypervisor is present
+VMX             *       Supports Intel hardware-assisted virtualization
+SVM             -       Supports AMD hardware-assisted virtualization
+X64             *       Supports 64-bit mode
+
+SMX             *       Supports Intel trusted execution
+SKINIT          -       Supports AMD SKINIT
+
+NX              *       Supports no-execute page protection
+SMEP            *       Supports Supervisor Mode Execution Prevention
+SMAP            -       Supports Supervisor Mode Access Prevention
+PAGE1GB         *       Supports 1 GB large pages
+PAE             *       Supports > 32-bit physical addresses
+PAT             *       Supports Page Attribute Table
+PSE             *       Supports 4 MB pages
+PSE36           *       Supports > 32-bit address 4 MB pages
+PGE             *       Supports global bit in page tables
+SS              *       Supports bus snooping for cache operations
+VME             *       Supports Virtual-8086 mode
+RDWRFSGSBASE    *       Supports direct GS/FS base access
+
+FPU             *       Implements i387 floating point instructions
+MMX             *       Supports MMX instruction set
+MMXEXT          -       Implements AMD MMX extensions
+3DNOW           -       Supports 3DNow! instructions
+3DNOWEXT        -       Supports 3DNow! extension instructions
+SSE             *       Supports Streaming SIMD Extensions
+SSE2            *       Supports Streaming SIMD Extensions 2
+SSE3            *       Supports Streaming SIMD Extensions 3
+SSSE3           *       Supports Supplemental SIMD Extensions 3
+SSE4a           -       Supports Streaming SIMDR Extensions 4a
+SSE4.1          *       Supports Streaming SIMD Extensions 4.1
+SSE4.2          *       Supports Streaming SIMD Extensions 4.2
+
+AES             *       Supports AES extensions
+AVX             *       Supports AVX intruction extensions
+FMA             *       Supports FMA extensions using YMM state
+MSR             *       Implements RDMSR/WRMSR instructions
+MTRR            *       Supports Memory Type Range Registers
+XSAVE           *       Supports XSAVE/XRSTOR instructions
+OSXSAVE         *       Supports XSETBV/XGETBV instructions
+RDRAND          *       Supports RDRAND instruction
+RDSEED          -       Supports RDSEED instruction
+
+CMOV            *       Supports CMOVcc instruction
+CLFSH           *       Supports CLFLUSH instruction
+CX8             *       Supports compare and exchange 8-byte instructions
+CX16            *       Supports CMPXCHG16B instruction
+BMI1            *       Supports bit manipulation extensions 1
+BMI2            *       Supports bit manipulation extensions 2
+ADX             -       Supports ADCX/ADOX instructions
+DCA             -       Supports prefetch from memory-mapped device
+F16C            *       Supports half-precision instruction
+FXSR            *       Supports FXSAVE/FXSTOR instructions
+FFXSR           -       Supports optimized FXSAVE/FSRSTOR instruction
+MONITOR         *       Supports MONITOR and MWAIT instructions
+MOVBE           *       Supports MOVBE instruction
+ERMSB           *       Supports Enhanced REP MOVSB/STOSB
+PCLMULDQ        *       Supports PCLMULDQ instruction
+POPCNT          *       Supports POPCNT instruction
+LZCNT           *       Supports LZCNT instruction
+SEP             *       Supports fast system call instructions
+LAHF-SAHF       *       Supports LAHF/SAHF instructions in 64-bit mode
+HLE             -       Supports Hardware Lock Elision instructions
+RTM             -       Supports Restricted Transactional Memory instructio
+
+DE              *       Supports I/O breakpoints including CR4.DE
+DTES64          *       Can write history of 64-bit branch addresses
+DS              *       Implements memory-resident debug buffer
+DS-CPL          *       Supports Debug Store feature with CPL
+PCID            *       Supports PCIDs and settable CR4.PCIDE
+INVPCID         *       Supports INVPCID instruction
+PDCM            *       Supports Performance Capabilities MSR
+RDTSCP          *       Supports RDTSCP instruction
+TSC             *       Supports RDTSC instruction
+TSC-DEADLINE    *       Local APIC supports one-shot deadline timer
+TSC-INVARIANT   *       TSC runs at constant rate
+xTPR            *       Supports disabling task priority messages
+
+EIST            *       Supports Enhanced Intel Speedstep
+ACPI            *       Implements MSR for power management
+TM              *       Implements thermal monitor circuitry
+TM2             *       Implements Thermal Monitor 2 control
+APIC            *       Implements software-accessible local APIC
+x2APIC          *       Supports x2APIC
+
+CNXT-ID         -       L1 data cache mode adaptive or BIOS
+
+MCE             *       Supports Machine Check, INT18 and CR4.MCE
+MCA             *       Implements Machine Check Architecture
+PBE             *       Supports use of FERR#/PBE# pin
+
+PSN             -       Implements 96-bit processor serial number
+
+PREFETCHW       *       Supports PREFETCHW instruction
+
+Maximum implemented CPUID leaves: 0000000D (Basic), 80000008 (Extended).
+
+Logical to Physical Processor Map:
+**------  Physical Processor 0 (Hyperthreaded)
+--**----  Physical Processor 1 (Hyperthreaded)
+----**--  Physical Processor 2 (Hyperthreaded)
+------**  Physical Processor 3 (Hyperthreaded)
+
+Logical Processor to Socket Map:
+********  Socket 0
+
+Logical Processor to NUMA Node Map:
+********  NUMA Node 0
+
+No NUMA nodes.
+
+Logical Processor to Cache Map:
+**------  Data Cache          0, Level 1,   32 KB, Assoc   8, LineSize  64
+**------  Instruction Cache   0, Level 1,   32 KB, Assoc   8, LineSize  64
+**------  Unified Cache       0, Level 2,  256 KB, Assoc   8, LineSize  64
+--**----  Data Cache          1, Level 1,   32 KB, Assoc   8, LineSize  64
+--**----  Instruction Cache   1, Level 1,   32 KB, Assoc   8, LineSize  64
+--**----  Unified Cache       1, Level 2,  256 KB, Assoc   8, LineSize  64
+----**--  Data Cache          2, Level 1,   32 KB, Assoc   8, LineSize  64
+----**--  Instruction Cache   2, Level 1,   32 KB, Assoc   8, LineSize  64
+----**--  Unified Cache       2, Level 2,  256 KB, Assoc   8, LineSize  64
+------**  Data Cache          3, Level 1,   32 KB, Assoc   8, LineSize  64
+------**  Instruction Cache   3, Level 1,   32 KB, Assoc   8, LineSize  64
+------**  Unified Cache       3, Level 2,  256 KB, Assoc   8, LineSize  64
+********  Unified Cache       4, Level 3,    6 MB, Assoc  12, LineSize  64
+
+Logical Processor to Group Map:
+********  Group 0
+	}
+13) ctrl2cap CLI
+	- coverts cap-lock button to ctrl
+	
+14) dbgview GUI
+	-
+
+15) Desktops GUI
+
+16) disk2vhd GUI
+
+17) diskext CLI
+
+18) Diskmon GUI
+
+19) Diksview GUI
+
+20) du CLI
+
+21) efsdump CLI
+
+22) findlinks CLI
+
+23) handle CLI
+
+24) hex2dec CLI
+
+25) junction CLI
+
+26) ldmdump CLI
+
+27) listdlls CLI
+
+28) livekd CLI
+
+29) Lordord GUI & CLI
+
+30) logonsessions CLI
+
+31) movefile CLI
+
+32) notmyfault GUI & CLI
+
+33) ntfsinfo CLI
+
+34) pagedfrg GUI
+
+35) pendmoves CLI
+
+36) pipelist CLI
+
+38) portmon GUI
+
+39) procdump CLI
+
+40) procexplorer GUI
+
+41) procmon GUI
+
+42) psexec CLI
+
+43) psfile CLI
+
+44) psgetsid CLI
+
+45) psinfo CLI
+
+46) pskill CLI
+
+47) pslist CLI
+
+48) psloggedon CLI
+
+49) psloglist CLI
+
+50) pspasswd CLI
+
+51) psping CLI
+
+52) psservice CLI
+
+53) psshutdown CLI
+
+54) pssuspend CLI
+
+55) rammap GUI
+
+56) regdelnul CLI
+
+57) regjump CLI
+
+58) ru64 CLI
+
+59) sdelete CLI
+
+60) shareEnum GUI
+
+61) shellrunas GUI
+
+62) sigcheck CLI
+
+63) streams CLI
+
+64) strings CLI
+
+65) sync CLI
+
+66) sysmon CLI
+
+67) tcpvcon GUI
+
+68) TCPview GUI
+
+69) testlimit CLI
+		  
+70) vmmap GUI
+
+71) volumeid CLI
+
+72) whois CLI
+
+73) winobj GUI
+
+74) zoomit CLI		  

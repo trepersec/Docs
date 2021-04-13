@@ -1,0 +1,8 @@
+Downloading files on linux
+
+.sh:
+	(1) chmod +X [file] #make it an executable
+	(2) ./[file]
+.rar
+	(1) sudo apt install unrar
+	(2) unrar e [file].rar [location]

@@ -1,0 +1,10 @@
+VMware bridged connection fix
+
+*Note* If you can get a connection on NAT but not bridged, it's most likely because you're defaulting to the wrong NIC. Below are the steps to fix.
+
+Steps:
+1) In VMware's interface, select Edit > Virtual Network Editor
+2) escalate privileges to change teh settings
+3) Select your bridged NIC (most likely VMnet0)
+4) Set the "Bridged to: Automatic" to your appropriate NIC (Ethernet example: Realtek PCIe GBE Family Controller. Wireless Example: Intel(R) Dual Band Wireless-AC)
+5) Ok & restart networking service!

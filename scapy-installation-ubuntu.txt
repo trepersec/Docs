@@ -1,0 +1,6 @@
+scapy - https://scapy.net/
+
+1) git clone https://github.com/secdev/scapy.git
+
+2) cd scapy
+$ sudo python3 setup.py install

@@ -1,0 +1,66 @@
+Docker on PI
+
+3/12/19
+Install Docker
+    # curl -sSL get.docker.com -o get-docker.sh && sh get-docker.sh
+
+    // this is an automated installation script provided by docker
+
+Add docker group
+    #   sudo groupadd docker     // create "docker" group
+    #   sudo gpasswd -a <user> docker   // add <user> to docker group
+    #   newgrp docker   // enable the group as the user you're under
+    
+    // This isn't necessarily but this is so we don't have to run "sudo docker ..." all the time
+
+
+A few other noob commands
+    # docker ps     // shows your current live containers
+    # docker ps -a  // see all containers ran and currently running
+    # docker version    // version information
+    # docker run docker/whalesay cowsay Hello there!    // another image similar to "hello-world". This actually gave me the error, "standard_init_linux.go:207: exec user process caused "exec format error" and this is becuase the image pulled wasn't packaged for the raspberry pi architecture (ARM).
+    # docker images     // images stored locally
+    # docker run -d -p 80:80 hypriot/rpi-busybox-httpd      // creates an accessible web server
+        # docker ps     // view the live image
+        # docker kill <container ID>    // kill the image
+        # docker ps     // check if its still there
+
+
+Build our first image
+
+Make the image available on Docker Hub
+// Docker hub is like GitHub; everyone openly posts their images
+    # docker tag <container ID> <dockerHub username>/<your image name>:latest
+    # docker push <username>/<image name>
+
+Remove local images
+    # docker rmi <username>/<container name>
+        - example
+            # docker rmi hello-world:latest   // you can "docker rmi <TAB>" to see what's available
+
+Pull vs run
+    # docker pull <username>/<container name>   
+    // This downloads the image from the Hub but doesn't run it
+
+    # docker run <username>/<container
+    // This searches locally for the image and then searches the hub if not found. Once finished downloading, it will run it.
+
+3/14/19
+Learning about docker foundations
+- Docker file
+    - a standardized file structure needed to build a docker image.
+    - generates containers that can be stopped, destroyed, and rebuilt 
+~~ on kali ~~
+- building our first image
+    # mkdir myproject && cd myproject
+    # echo "hello" > hello
+    # echo -e "FROM busybox\nCOPY /hello /\nRUN cat /hello" > Dockerfile
+    # docker build -t helloapp:v1 .
+
+
+
+Sources:
+- https://medium.com/@deepakshakya/beginners-guide-to-use-docker-build-run-push-and-pull-4a132c094d75
+- https://blog.hypriot.com/getting-started-with-docker-on-your-arm-device/
+- https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
+- https://www.howtoforge.com/tutorial/how-to-create-docker-images-with-dockerfile/

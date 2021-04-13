@@ -1,0 +1,52 @@
+Graphite walk-through on Centos
+Source: https://www.vultr.com/docs/how-to-install-and-configure-graphite-on-centos-7
+
+
+Install packages
+1) # sudo yum install -y http://epel.mirror.constant.com/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm
+2) # sudo yum install -y graphite-web python-carbon
+
+Configure Graphite
+3) # sudo nano /etc/graphite/conf/storage-schemas.conf
+4) append the following:
+ [default]
+ pattern = .*
+ retentions = 12s:4h, 2m:3d, 5m:8d, 13m:32d, 1h:1y
+
+5) Start it up via:
+# sudo systemctl enable carbon-cache
+# sudo systemctl start carbon-cache 
+
+6) Configure "timezone" and "SECRET_KEY" variables
+# sudo nano /etc/graphite-web/local_settings.py
+
+7) Database Setup script
+# PYTHONPATH=/usr/share/graphite/webapp django-admin syncdb --settings=graphite.settings
+
+8) Configure Apache for Graphite
+# echo > /etc/httpd/conf.d/welcome.conf
+
+9) # sudo nano /etc/httpd/conf.d/graphite-web.conf
+- Search for " Directory "/usr/share/graphite/" " Block and replace it with the following:
+
+    Require all granted
+    Order allow,deny
+    Allow from all
+	
+10) # sudo chown apache:apache /var/lib/graphite-web/graphite.db
+
+
+11) touch /var/lib/graphite-web/index
+12 # sudo systemctl start httpd; sudo systemctl enable httpd  
+
+Enable port 80
+13) # sudo firewall-cmd --permanent --add-service=http; sudo firewall-cmd --reload
+
+14) Connect through browser:
+# localhost 
+
+
+*Notes*
+1) Didn't get it to work on Ubuntu due to apache error. Not sure what it was since I didn't fix it but I would get a apache webpage error
+2) A little more functionality than collectd but appearance wise, similar. More functionality = auto-refresh button
+3) set up time not much longer than collectd.

@@ -1,0 +1,11 @@
+BSD
+
+FreeBSD:
+
+NetBSD:
+
+Pfsense:
+
+wget = use "fetch" instead.
+
+decompress = tar -xzvf [file]

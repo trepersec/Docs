@@ -1,0 +1,388 @@
+Installing snort on my raspberry pi 3 B+. I wanted to use Moloch but it only runs 64-bit amd processors and mine is a 32-bit armhfv7 unfortunately. So, i'm going to get back to my roots and setup snort with ELK stack as a sniffer for my personal home setup to get some network analysis training and have a use for my pi3.
+
+Source(s): 
+- https://s3.amazonaws.com/snort-org-site/production/document_files/files/000/000/122/original/Snort_2.9.9.x_on_Ubuntu_14-16.pdf
+- https://github.com/adityashrm21/RaspberryPi-Packet-Sniffer/blob/master/README.md
+
+1) Set up raspberry pi as a MITM device
+    # sudo apt-get install dnsmasq 
+    # sudo service dnsmasq stop
+    # sudo nano /etc/dhcpcd.conf
+        - append the following to give your interface a STATIC ip adress:
+        interface eth1
+            static ip_address=192.168.1.1/29
+    # sudo service dhcpcd restart
+    # sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig  
+    # sudo nano /etc/dnsmasq.conf
+        -   interface=eth1      # Use interface eth1  
+            bind-interfaces      # Bind to the interface to make sure we aren't sending things elsewhere  
+            server=8.8.8.8       # Forward DNS requests to Google DNS  
+            domain-needed        # Don't forward short names  
+            bogus-priv           # Never forward addresses in the non-routed address spaces.  
+            dhcp-range=192.168.1.2,192.168.1.2,12h # Assign IP addresses between 192.168.1.2 and 192.168.1.2 with a 12 hour lease time
+    # sudo nano /etc/sysctl.conf
+        - net.ipv4.ip_forward=1 #uncomment this line
+    # sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+    # sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE  
+        sudo iptables -A FORWARD -i eth0 -o eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT  
+        sudo iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
+    # sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
+        - OR
+        # iptables-save
+    # sudo nano /lib/dhcpcd/dhcpcd-hooks/70-ipv4-nat
+        - append:
+        iptables-restore < /etc/iptables.ipv4.nat  
+    # sudo service dnsmasq start
+    - I had an issue where I spent a long time trying to fix dnsmasq startup issues. My solution was appending the solution below to "/etc/rc.local"
+        ~ /bin/sleep 10
+        ~ service dnsmasq restart
+        - If this doesn't work for you, here's a link of a few different solutions that didn't work for me but for others: https://bugs.launchpad.net/ubuntu/+source/dnsmasq/+bug/1531184
+    # sudo reboot
+
+    ***** if dhcpcd status is erroring, "failed to start dhcpcd on all interfaces"... do this!****
+    It means you have more than 1 client running. You need to delete one.
+    # dpkg -l | grep dhcp
+    # apt-get remove dhcpcd
+        - or sudo systemctl disable dhcpcd.service
+
+    Source: https://superuser.com/questions/924166/dhcp-failure-when-rebooting-rpi-2
+
+
+------------------- Install Snort ------------------------
+
+1) sudo apt install ethtool
+    sudo apt install build-essential
+    sudo apt-get install -y libpcap-dev libpcre3-dev libdumbnet-dev
+    sudo apt-get install -y bison flex
+    sudo apt-get install -y zlib1g-dev liblzma-dev openssl libssl-dev
+    sudo apt-get install -y libnghttp2-dev
+    sudo apt install libluajit-5.1-dev
+2) sudo nano /etc/network/interfaces
+    * Append the following *
+    post-up ethtool -K eth1 gro off
+    post-up ethtool -K eth1 lro off
+3) sudo ifconfig eth1 down && sudo ifconfig eth1 up
+3.1) ethtool -k eth1 | grep receive-offload
+    - If you don't see both options off, reboot. If both still aren't off, continue.
+4) $ mkdir ~/snort_src && cd ~/snort_src
+5) wget https://www.snort.org/downloads/snort/daq-2.0.6.tar.gz
+6) tar -xzvf daq*
+7) cd daq*
+8) ./configure
+9) make
+10) sudo make install
+11) cd ~/snort_src
+12) wget https://www.snort.org/downloads/snort/snort-2.9.12.tar.gz 
+13) tar -zxvf snort*
+14) cd snort*
+15) ./configure --enable-sourcefire
+16) make
+17) sudo make install
+18) sudo ldconfig
+19) snort -V
+    - if this doesn't work run: $ sudo ln -s /usr/local/bin/snort /usr/sbin/snort
+20) 
+sudo groupadd snort
+sudo useradd snort -r -s /sbin/nologin -c SNORT_IDS -g snort
+sudo mkdir /etc/snort
+sudo mkdir /etc/snort/rules
+sudo mkdir /etc/snort/rules/iplists
+sudo mkdir /etc/snort/preproc_rules
+sudo mkdir /usr/local/lib/snort_dynamicrules
+sudo mkdir /etc/snort/so_rules
+sudo touch /etc/snort/rules/iplists/black_list.rules
+sudo touch /etc/snort/rules/iplists/white_list.rules
+sudo touch /etc/snort/rules/local.rules
+sudo touch /etc/snort/sid-msg.map
+sudo mkdir /var/log/snort
+sudo mkdir /var/log/snort/archived_logs
+sudo chmod -R 5775 /etc/snort
+sudo chmod -R 5775 /var/log/snort
+sudo chmod -R 5775 /var/log/snort/archived_logs
+sudo chmod -R 5775 /etc/snort/so_rules
+sudo chmod -R 5775 /usr/local/lib/snort_dynamicrules
+sudo chown -R snort:snort /etc/snort
+sudo chown -R snort:snort /var/log/snort
+sudo chown -R snort:snort /usr/local/lib/snort_dynamicrules
+21)
+cd ~/snort_src/snort-2.9.12/etc/
+sudo cp *.conf* /etc/snort
+sudo cp *.map /etc/snort
+sudo cp *.dtd /etc/snort
+cd ~/snort_src/snort-2.9.12/src/dynamic-preprocessors/build/usr/local/lib/snort_dynamicpreprocessor/
+sudo cp * /usr/local/lib/snort_dynamicpreprocessor/         # takes a second
+
+22) sudo sed -i "s/include \$RULE\_PATH/#include \$RULE\_PATH/" /etc/snort/snort.conf
+23) sudo nano /etc/snort/snort.conf
+    FROM "ipvar HOME_NET any" TO ipvar HOME_NET 192.168.1.0/30"
+    FROM "var RULE_PATH ../rules" TO "var RULE_PATH /etc/snort/rules"
+    FROM "var SO_RULE_PATH ../so_rules" TO "var SO_RULE_PATH /etc/snort/so_rules"
+    FROM "var PREPROC_PATH_PATH ../preproc_rules" TO "var PREPROC_RULE_PATH /etc/snort/preproc_rules"
+    FROM "var WHITE_LIST_PATH ../rules" TO "var WHITE_LIST_PATH /etc/snort/rules/iplists"
+    FROM "var BLACK_LIST_PATH ../rules" TO "var BLACK_LIST_PATH /etc/snort/rules/iplists"
+    FROM "#include $RULE_PATH/local.rules" TO "include $RULE_PATH/local.rules"
+
+24) Test configuration file after changes in 23)
+sudo snort -T -i eth1 -c /etc/snort/snort.conf
+
+25) create test rules
+sudo nano /etc/snort/rules/local.rules
+Append: alert icmp any any -> $HOME_NET any (msg:"ICMP test detected"; GID:1; sid:10000001; rev:001; classtype:icmp-event;)
+
+sudo nano /etc/snort/sid-msg.map
+Append: 
+#v2
+1 || 10000001 || 001 || icmp-event || 0 || ICMP Test detected || url,tools.ietf.org/html/rfc792
+
+26) test rule file
+sudo snort -T -c /etc/snort/snort.conf -i eth1
+
+27) start it up
+sudo /usr/local/bin/snort -A console -q -u snort -g snort -c /etc/snort/snort.conf -i eth1
+
+
+----------------- barnyard2 ---------------------
+1) sudo apt-get install -y mysql-server default-libmysqlclient-dev mysql-client autoconf libtool
+
+2) sudo nano /etc/snort/snort.conf
+    - search for "unified2"
+    - Append: output unified2: filename snort.u2, limit 128
+3) 
+cd ~/snort_src
+wget https://github.com/firnsy/barnyard2/archive/master.tar.gz -O barnyard2-Master.tar.gz
+tar zxvf barnyard2-Master.tar.gz
+cd barnyard2-master
+autoreconf -fvi -I ./m4
+
+4) 
+sudo ln -s /usr/include/dumbnet.h /usr/include/dnet.h
+sudo ldconfig
+
+5)
+uname -m
+- for arm71
+    ./configure --with-mysql --with-mysql-libraries=/usr/lib/arm-linux-gnueabihf/
+make
+sudo make install
+7) barnyard2 -V
+8) 
+sudo cp ~/snort_src/barnyard2-master/etc/barnyard2.conf /etc/snort/
+sudo mkdir /var/log/barnyard2
+sudo chown snort.snort /var/log/barnyard2
+sudo touch /var/log/snort/barnyard2.waldo
+sudo chown snort.snort /var/log/snort/barnyard2.waldo
+
+9) sudo mysql -u root -p
+create database snort;
+use snort;
+source /home/pi/snort_src/barnyard2-master/schemas/create_mysql
+CREATE USER 'snort'@'localhost' IDENTIFIED BY 'password';
+grant create, insert, select, delete, update on snort.* to 'snort'@'localhost';
+exit
+
+10) sudo nano /etc/snort/barnyard2.conf
+output database: log, mysql, user=snort password=password dbname=snort host=localhost sensor name=sensor01
+
+11) sudo chmod o-r /etc/snort/barnyard2.conf
+12) sudo /usr/local/bin/snort -q -u snort -g snort -c /etc/snort/snort.conf -i eth1
+    - do some test pings to generate alerts like before
+13) sudo barnyard2 -c /etc/snort/barnyard2.conf -d /var/log/snort -f snort.u2 -w /var/log/snort/barnyard2.waldo -g snort -u snort
+14) mysql -u snort -p -D snort -e "select count(*) from event"
+
+a-------------------------- pulledpork ----------------------
+
+1) sudo apt-get install -y libcrypt-ssleay-perl liblwp-useragent-determined-perl
+
+2)
+cd ~/snort_src
+sudo wget https://github.com/shirkdog/pulledpork/archive/master.tar.gz -O pulledpork-master.tar.gz
+sudo tar xzvf pulledpork-master.tar.gz
+cd pulledpork-master/
+sudo cp pulledpork.pl /usr/local/bin
+sudo chmod +x /usr/local/bin/pulledpork.pl
+sudo cp etc/*.conf /etc/snort
+
+3) pulledpork.pl -V
+
+4) sudo nano /etc/snort/pulledpork.conf
+
+- Go to snort.org > make an account and sign in > go to your account settings > Oinkcode > copy that to paste in the pulledpork.conf below
+- in nano, using CTRL + '_' (underscore) and type in the line number
+
+Line 19: enter your oinkcode where appropriate (or comment out if no oinkcode)
+Line 29: Un-comment for Emerging threats ruleset (not tested with this guide)
+Line 74: change to: rule_path=/etc/snort/rules/snort.rules
+Line 89: change to: local_rules=/etc/snort/rules/local.rules
+Line 92: change to: sid_msg=/etc/snort/sid-msg.map
+Line 96: change to: sid_msg_version=2
+Line 119: change to: config_path=/etc/snort/snort.conf
+Line 133: change to: distro=Ubuntu-12-04
+Line 141: change to: black_list=/etc/snort/rules/iplists/black_list.rules
+Line 150: change to: IPRVersion=/etc/snort/rules/iplists
+
+5) sudo /usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l
+
+6) sudo nano /etc/snort/snort.conf
+    - append to the bottom: 
+        include $RULE_PATH/snort.rules
+7) sudo snort -T -c /etc/snort/snort.conf -i eth0
+8) sudo crontab -e
+    - Append:
+        11 20 * * * /usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l
+            - 10:11PM (20:11) everyday
+            - cron syntax found here https://www.adminschoice.com/crontab-quick-reference
+        
+------------- creating services ----------------
+
+1) sudo vi /lib/systemd/system/snort.service
+    - Append:
+        [Unit]
+        Description=Snort NIDS Daemon
+        After=syslog.target network.target
+
+        [Service]
+        Type=simple
+        ExecStart=/usr/local/bin/snort -q -u snort -g snort -c /etc/snort/snort.conf -i ens160
+        
+         [Install]
+        WantedBy=multi-user.target
+2) sudo systemctl enable snort
+3) sudo systemctl start snort
+    - or
+        sudo service snort start
+4) systemctl status snort
+    - or
+        service snort status
+5) sudo vi /lib/systemd/system/barnyard2.service
+    - append:
+        [Unit]
+        Description=Barnyard2 Daemon
+        After=syslog.target network.target
+       
+        [Service]
+        Type=simple
+        ExecStart=/usr/local/bin/barnyard2 -c /etc/snort/barnyard2.conf -d /var/log/snort -f snort.u2 -q -w /var/log/snort/barnyard2.waldo -g snort -u snort -D -a /var/log/snort/archived_logs
+       
+        [Install]
+        WantedBy=multi-user.target
+6) sudo systemctl enable barnyard2
+7) sudo systemctl start barnyard2
+    - or
+        sudo service barnyard2 start
+8) sudo systemctl status barnyard2
+    - or
+        sudo service barnyard2 status
+
+
+------------------ installing splunk --------------------
+
+Terms: 
+1) Snort = a seperate Linux (Raspian) server that's my raspberry pi with snort and soon to be splunk forwarder.
+2) Splunk = a seperate Windows box that'll serve as just my central splunk system
+3) splunk universal forwarder = only capatabile current solution by splunk to send data from snort on (Linux) pi to splunk
+
+Setting up splunk server first:
+1) 
+
+Turning on https for splunk:
+https://docs.splunk.com/Documentation/Splunk/7.2.3/Security/TurnonbasicencryptionwithSplunkWeb
+
+Open up ports for 8000 if you want remote access and 9997 to forward traffic
+
+Setting up splunk's universal forwader:
+*WARNING* If you are ever prompted for a "Splunk username", TURN OFF THE SERVICE VIA  "/opt/splunkforwarder/bin/splunk stop" then add a user via "/opt/splunkforwarder/bin/splunk add user admin -password <pass> -role admin
+
+1) Download Splunk Universal Forwarder: http://www.splunk.com/download/universalforwarder 
+2) Install 
+3) /opt/splunkforwarder/bin/splunk add forward-server <ip address>:9997
+4) /opt/splunkforwarder/bin/splunk list forward-server
+5) /opt/splunkforwarder/bin/splunk add monitor /path/to/app/logs/ -index main -sourcetype %app%
+    - Be careful with this. I had an issue with parent directorting interfering with subdirectory. In my example, I wanted to log /var/log/snort. However, I added a test rule of /var/log first. Because /var/log/snort is inside /var/log, there will be issues that cause the monitoring system to see /var/log/snort as a FILE and not a directory! To do so, just specific either or, but never both! To check if this affects you, use the command, "/opt/splunkforwader/bin/splunk list monitor", and check if there are any directories listed at the bottom under "Monitored Files:".
+    - An alternative way of doing this is appending entries in "/opt/splunkforwarder/etc/apps/SplunkUniversalForwarder/default/inputs.conf". Many other additions can be made like blacklist, port mangement, file system change monitoring, windows event log monitor, registry, and many more! A word of caution, the same rule I mentioned above about parent directories interfering with subdirectoies applies here.
+6) sudo nano /opt/splunkforwarder/etc/apps/SplunkUniversalForwarder/default/inputs.conf
+    # This is also configurable through the GUI! But I did it this way.
+    - Append the following:
+        
+        [tcp:22]                # since we have port 22 open for ssh, we want to monitor it in case someone else uses it
+        sourcetype = open-ports     
+
+        [tcp:9997]              # same as above, we have port 9997 open for forwarding and want to make sure only forwarding occurs
+        sourcetype = open-ports
+7) set up resource monitoring on all machines
+    - My topology is 2 Windows machines (Splunk head and main computer for daily use with a splunk forwader that's not yet installed) and 1 Linux machine (Raspian that has snort and splunk forwarder) so i'll explain it from this standpoint.
+    1) download "Splunk Add-on for Unix and Linux" on both the splunk head and the linux machine.
+        - Splunk Head
+            - Download the app through the apps page through the Splunk WebGUI
+        - Linux 
+            - download the -tar.gz file and unzip it into "/opt/splunkforwader/etc/apps"
+    2) Download "Splunk App for Unix and Linux" ONLY on the splunk head.
+        - Download the app through the apps page through the Splunk WebGUI
+    
+    3) Once downloaded, go into the Linux machine and run..
+        # /opt/splunkforwarder/bin/splunk cmd /opt/splunkforwarder/etc/apps/Splunk_TA_nix/bin/setup.sh
+            - If you get the error, Syntax error: "(" unexpected, like I did this.. This is an enviromental issue. To fix, I did..
+                sudo nano /opt/splunkforwarder/etc/apps/Splunk_TA_nix/bin/setup.sh
+                    # On line 1, I changed "#!/bin/sh" to "#!/bin/bash"
+            - Had to create an env variable on the Linux forwader because code was referencing it, but the variable didn't exist.
+                # SPLUNK_HOME="/opt/splunkforwader/"
+                # export SPLUNK_HOME
+                # printenv | grep splunk                # to confirm it was added
+            - use your local credentials for the splunk on your linux forwader, not the main one. 
+            - Use your webgui address (i.e. "http://192.168.1.1:8000"), login and password
+
+
+Collectd on raspbian:
+Followed my GitHub link here: 
+1) Install Collectd Service
+# apt-get -y install collectd
+
+2) Install java properly FOR RASPIAN (guides/solutions: https://www.raspberrypi.org/forums/viewtopic.php?t=197824)
+- sudo apt-get purge -y openjdk-8-jre-headless
+- sudo apt-get install -y openjdk-8-jre-headless
+- sudo apt-get install -y openjdk-8-jre
+
+3) Install Collectd-Web and Dependencies
+# apt-get install -y git librrds-perl libjson-perl libhtml-parser-perl
+
+4) Create a token to send data via HTTP to Splunk's HTTP Event Collector (HEC)
+Source: https://docs.splunk.com/Documentation/Splunk/7.2.3/Data/UsetheHTTPEventCollector
+
+5) I'm going to use the raspian as the central collectd server and then send everything to splunk (this is the way to do it according to splunk as you can't go from client directly to splunk) source: https://collectd.org/wiki/index.php/Networking_introduction#Basic_multicast_setup
+
+# sudo nano /etc/collectd/collectd.conf
+# Search for "write_http" and below that put in something like
+<Plugin write_http>
+        <Node "raspian-http-1">
+          URL "http://"https://192.168.1.2:8088/services/collector/raw?channel=dac5a586-fa1a-42a0-ae71-e3c9a723cd92"
+          Header "Authorization: Splunk dac5a586-fa1a-42a0-ae71-e3c9a723cd92"
+          Format "JSON"
+          Metrics true
+          StoreRates true
+        </Node>
+</Plugin>
+
+
+test with: 
+curl -k https://192.168.1.2:8088/services/collector/raw -H 'Authorization: Splunk dac5a586-fa1a-42a0-ae71-e3c9a723cd92' -d '{"event":"This is a test event"}'
+Search in splunk webGUI with source="collectd"
+Sources:
+- https://docs.splunk.com/Documentation/Splunk/7.2.3/Data/UsetheHTTPEventCollector#Configure_HTTP_Event_Collector_on_Splunk_Enterprise
+- https://www.youtube.com/watch?v=e6lVqUCEqp0
+- https://www.tecmint.com/configure-collectd-as-central-monitoring-server-for-clients/
+- https://docs.splunk.com/Documentation/Splunk/7.2.3/Metrics/GetMetricsInCollectd#Configure_collectd
+
+
+Sources: 
+- https://answers.splunk.com/answers/50082/how-do-i-configure-a-splunk-forwarder-on-linux.html
+- https://docs.splunk.com/Documentation/Forwarder/7.2.3/Forwarder/Configuretheuniversalforwarder
+- https://www.youtube.com/watch?v=lF9BmG-3Kc4
+- https://thepihut.com/blogs/raspberry-pi-tutorials/how-to-lock-your-raspberry-pi-screen    # add lock feature
+- https://docs.splunk.com/Documentation/UnixAddOn/5.2.4/User/DeploytheSplunkAdd-onforUnixandLinuxinadistributedSplunkenvironment # install splunk add-on for unix and linux
+
+
+Current problems:
+- write_http not working
+- My Windows isn't setup
+- inputs aren't showing in splunk
+
+adding mac address filtering for static ip addressing - https://ubuntuforums.org/showthread.php?t=2320860

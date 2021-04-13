@@ -1,0 +1,101 @@
+2/7/19
+
+~~~~~~~~~~~~~~ FreeBSD beginner setup on raspberrypi 3 B+ - arm64 ~~~~~~~~~~~~~~ 
+
+1) download - https://download.freebsd.org/ftp/releases/arm64/aarch64/ISO-IMAGES/12.0/FreeBSD-12.0-RELEASE-arm64-aarch64-RPI3.img.xz
+
+2) burn to sd card
+
+3) mine booted directly into a login page
+
+"FreeBSD/arm64 (generic) (ttyv0)
+
+login:"
+
+    - username: root
+    - password: root
+4) change root password
+    - # passwd root
+5) setup timezone
+    - Options:
+        - # tzsetup
+        - # date yymmddhhmmss
+        - # cp /usr/share/zoneinfo/America/Chicago /etc/localtime
+    - check with: # date
+
+* NOTE* Typically you would do "# freebsd-update fetech" but as of now, freebsd doesn't fully support arm. So we just continue setting up FreeBSD
+
+6) # pkg update
+    - you'll be prompted to install the package manager which will grab all the latest and greatest.
+    - Perform "# pkg update" to assure of updates
+7) # pkg upgrade
+
+8) install nano, bash, bash_completion if you want
+    - # pkg search bash
+    - # pkg install bash_completion-x.x*        // whatever version you see. It will also install the latest bash version
+9) setup ssh    *By default, ssh is enable and running for some but if not then
+    - # ls /etc/ssh                 // search for *.pub files
+    - # vi /etc/rc.conf             // check if "sshd_enabled" is set to "YES" or "NO" and change accordingly
+    - # reboot
+    - # service -e | grep "ssh"     // you should see the ssh daemon
+        - # service sshd onestart   // to start the daemon
+    - connect!
+10) install sudo
+    - # pkg install sudo
+11) create a user with privleges
+    - # sudo adduser
+    - Even though I set for the user to have admin privileges, I still had to add it to the sudoers file:
+        - # vi /usr/local/etc/suoders
+            - or # visudo
+        -  Append after "root ALL=(ALL) ALL"
+            user ALL=(ALL) ALL
+        - save
+        - Method 2 - appending to the wheel group:
+            - # pw groupmod wheel -M user
+            - # vi /usr/local/etc/suoders
+                - or # visudo
+            - uncomment "# %wheel ALL=(ALL) ALL"
+
+12) Networking
+    - I have two interfaces so my first will be my WAN link via DHCP (ue0) and my second will be my LAN link set statically (ue1)
+    - Static IP address
+        - # vi /etc/rc.conf
+            - Original:
+                hostname="generic"
+                ifconfig_DEFAULT="DHCP"
+                sshd_enable="YES"
+                sendmail_enable="NONE"
+                sendmail_submit_enable="NO"
+                sendmail_outbound_enable="NO"
+                sendmail_msp_queue_enable="NO"
+                growfs_enable="YES"
+            - Adjusted:
+                hostname="generic"
+                ifconfig_ue0="DHCP"
+                ifconfig_ue1="inet 192.168.1.1 netmask 255.255.255.248"
+                defaultrouter="192.168.1.1"
+                sshd_enable="YES"
+                sendmail_enable="NONE"
+                sendmail_submit_enable="NO"
+                sendmail_outbound_enable="NO"
+                sendmail_msp_queue_enable="NO"
+                growfs_enable="YES"
+            - # service netif restart
+            - # service routing restart
+    - DNS
+        - # vi /etc/resolv.conf
+            - Set your dns server(s) accordingly. I already have upstream done through dhcp so I just appended google as my second DNS
+            - nameserver 8.8.8.8
+
+13) Change hostname
+    - could of done this in the networking step above but that would be so disorganized
+    - # vi /etc/rc.conf
+        - Original:
+            hostname="generic"
+        - Adjusted
+            hostname="raspbsd"
+    
+
+
+
+    

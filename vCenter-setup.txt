@@ -1,0 +1,33 @@
+VMware vCenter Server Appliiance 6.5 Guide
+
+
+1) Create a Windows VM (max of 10 hosts and 100 VMs for vCenter)
+    - minimum requirements: 
+        - 2 CPU
+        - 8 GB RAM
+        - 20 GB Storage
+
+2) Mount the .iso
+3) Mounted drive > vcsa-ui-installer > win32 > installer
+
+---- stage 1 ----
+4) Install > Next
+5) Agree to terms > next
+6) Select "vCenter Server with an embedded platform services controler" > Next
+7) Enter ESXi IP address, username, and password > Next > Accept certificate > Next 
+8) Name it and set the password > Next 
+9) Select deployment size > Next 
+10) Select Datastore > (Optional) set thin disk mode > Next
+11) Set network settings > Next
+12) Verify settings > Finish > Continue
+    - Deployment takes approximately 8 minutes
+
+---- stage 2 ----
+13) Next
+14) sync with preferred clock > Next
+15) fill in credentials > Next
+16) Deselect CEIP radio box > Next
+17) verify > finish > OK
+    - approximately 10-20 minutes
+
+**note** if you get any errors about a service not starting or anything else. Just restart the entire installation process. If that does not work, make sure you have internet connectivity.s

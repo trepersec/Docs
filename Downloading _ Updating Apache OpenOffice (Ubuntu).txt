@@ -1,0 +1,12 @@
+Downloading/Uploading Apache OpenOffice (Ubuntu)- https://www.openoffice.org/download/
+
+(1) tar Apache-OpenOfficeX.X.X.tar.gz
+
+(2) cd ~/Downloads/en-US/DEBS
+
+(3) sudo dpkg -i *.deb
+By default, this will install/update Apache OpenOffice in your /opt directory.
+
+(4) cd ~/Downloads/en-US/DEBS/desktop-integration
+
+(5) sudo dpkg -i *.deb

@@ -1,0 +1,16 @@
+##Suricata How to on Windows
+
+
+(1) Download from website
+(2) Go into suricata.yaml and add rules not listed that are installed in C:\Suricata\rules
+	Find "stats" and comment that section out
+(3) download suricata rules and add them from https://rules.emergingthreats.net/open/suricata/rules/
+(4) goto "decoder-events.rules" > find "SURICATA TCPv4 invalid checksum" > comment out both TCP/UDP *very noisy*
+	also comment out "SURICATA zero length padN option" in the same file.
+	comment out "SURICATA STREAM TIMEWAIT ACK with wrong seq" from "stream-events.rules"
+(5) uncomment the "threshold.con" line
+(6) netsh int ipv4 show interfaces = interface
+(7) Suricata -c suricata.yaml -i [ip/interface] -T
+
+
+

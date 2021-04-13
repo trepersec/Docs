@@ -1,0 +1,10 @@
+netsniff-ng - https://github.com/netsniff-ng/netsniff-ng
+
+1) git clone https://github.com/netsniff-ng/netsniff-ng.git
+
+2) Dependencies
+$ sudo apt-get install build-essential libnl-3-dev libnl-genl-3-dev libnl-route-3-dev libgeoip-dev liburcu-dev libpcap-dev zlib1g-dev -y
+
+3) cd netsniff-ng
+4) ./configure
+5) make && sudo make install

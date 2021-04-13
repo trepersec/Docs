@@ -1,0 +1,46 @@
+*Warning* - The sources used are from an unvetted source so use at your own risk! 
+I used this on a throwaway machine with data I don't mind losing/wiping in case of infection!
+
+Sources:
+- https://www.sysnettechsolutions.com/en/vmware/install-macos-mojave-10-14-vmware/
+- https://www.youtube.com/watch?v=vu2A0853bwI&vl=en
+
+Steps:
+1) Download the following items:
+    - Mac ISO - https://drive.google.com/file/d/1tCqH1rkw9YXOs--UXcY5RmsE_RRuXJYx/view
+    - VMware Unlocker 2.1.1 - https://drive.google.com/file/d/0B9Eqsl9MKX8pSk9lNWtpckFZM1k/view
+        - This is somehow needed for the MacOS to actually load.
+        - It also adds Mac to the list of available VMs on VMware.
+2) Set up the VM in VMware (Do NOT start the VM)
+    - Allocate appropriate resources based off use
+        - I'm using this to get more familiar with the Mac interface and being able to navigate. When troubleshooting for other people, I ran into the issue of not knowing where things are and having to rely on the user to tell me where things like the settings are.
+        - I purposfully overprevisioned for a smoother time and I typically only have one VM running on this machine.
+        - 100GB Stoage (HDD), 2 Processors & 2 Cores per processor = 4 total, 8GB Memory
+    - Do NOT start the VM
+3) Edit the .vmx
+    - Locate the directory the VM is stored
+    - Open the .vmx file in your favorite text editor (i use Visual Studio but others like notepad, notepad++, atom, and sublime are perfectly acceptable)
+    - Append the following text:
+        smc.version="0"
+    - Save & Exit
+4) Start the VM
+5) Set up your Mac as preferred (takes around 30 minutes. Varies depending on resources given)
+    - (optional) Before clicking "Install MacOS", the video changed the HDD name so...Click "Disk Utility"1
+        - Select the HDD(s) that you want to name change (notice the storage you allocated previously but the name is something like "VMware Virtual SATA Hard Drive Media")
+        - At the top, select "Erase" and rename. Click Erase.
+        - Exit this menu and proceed to install the MacOS.
+
+You've made it to the Desktop! Now for the finishing touches..
+
+6) Eject any CDs on the Desktop
+    - right-click and select "Eject"
+7) Add VMware tools
+    - Doing this the normal way (through Vmware's interface) won't work. It'll show that it's added, but you won't receive the benefits.
+    - Instead, within the VMware Unlocker, there is another ISO that'll do this for us (again, be way of the information you put in this system because there's a lot of suspicious inputs that we can't vet)
+    - Use the shortcut outside of the VM, Ctrl + D, to open up the VM's settings.
+    - Go to the "CD/DVD (SATA)" device, know where your VMware Unlocker folder is and change the ISO image to the following, "VMwareUnlocker2.1.1\tools\dawin.iso"
+    - Connect it by clicking the check box or if it doesn't pop up, go to the bottom right hand corner of the VMware interface and right-click the CD icon and click "Connect".
+    - Install VMware tools through the GUI
+    - Restart
+    - (optional) Go back into the VM settings and REMOVE the "CD/DVD (SATA)" device if you don't plan on using it.
+Done!

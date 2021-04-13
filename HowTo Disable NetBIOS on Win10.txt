@@ -1,0 +1,3 @@
+#How to disable netBIOS on Windows 10
+
+	Control Panel > Network and dial-up connections > select LAN > click properties > general tab > select Internet Protocol (TCP/IP) > Properties > Advanced > WINS tab > Disable NetBIOS over TCP/IP

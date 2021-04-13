@@ -1,0 +1,20 @@
+VyOS/Vyatta
+
+~On fresh installation~
+
+install image
+
+One interface:
+conf
+1) Set static/dhcp address
+
+	- set interfaces ethernet eth0 address 192.168.250.254/24
+	
+2) Set up dhcp server (without VLANs)
+	1. edit service dhcp-server shared-network-name Main subnet 192.168.250.0/24
+	2. set default-router 192.168.250.254
+	3. set dns-server 192.168.250.254
+	4. set domain-name support.local
+	5. set start 192.168.250.100 stop 192.168.250.150
+
+commit && save

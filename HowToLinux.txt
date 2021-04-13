@@ -1,0 +1,26 @@
+HowToLinux
+
+Create global alias
+
+	(1) one line
+	echo "alias <name>='<command/path>'" >> ~/.bashrc
+
+	Ex: echo "alias ll='ls -la'" >> ~/.bashrc
+
+	(2)
+	sudo vi ~/.bashrc
+	alias <name>="<path>"
+
+
+Install packages
+	~Ubuntu~
+	(1) sudo dpkg -i [package].deb
+	**If .rpm**
+	(1) sudo apt install alien
+	(2) sudo alien [package].rpm
+	(3) sudo dpkg -i [package].deb
+
+Transfer .dmg to .iso
+	(1) sudo apt install dmg2img
+	(2) dmg2img [name].dmg
+	(3) mv [name].dmg [name].iso

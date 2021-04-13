@@ -1,0 +1,8 @@
+foremost - http://foremost.sourceforge.net/
+
+1) $ wget http://foremost.sourceforge.net/pkg/foremost-1.5.7.tar.gz
+- might be updated, check site
+
+2) tar -zxvf foremost-*.tar.gz
+
+3) make && make install

@@ -1,0 +1,12 @@
+tcpreplay - http://tcpreplay.appneta.com/wiki/installation.html
+
+1) git clone https://github.com/appneta/tcpreplay.git
+- might have to donwload from http://tcpreplay.appneta.com/wiki/installation.html#downloads because the github content did not have a ./configure
+
+2) cd tcpreplay/
+
+3) sudo apt-get install build-essential libpcap-dev libdnet -y
+
+4) ./configure
+
+5) make && sudo make install

@@ -1,0 +1,10 @@
+Binwalk - https://github.com/ReFirmLabs/binwalk
+
+1) $ git clone https://github.com/ReFirmLabs/binwalk ~/Desktop/binwalk
+
+2) Dependencies
+
+$ sudo apt-get install python3-crypto libqt4-opengl python3-opengl python3-pyqt4 python3-pyqt4.qtopengl python3-numpy python3-scipy python3-pip mtd-utils gzip bzip2 tar arj lhasa p7zip p7zip-full cabextract cramfsswap squashfs-tools sleuthkit default-jdk lzop srecord -y
+$ sudo pip3 install nose coverage pyqtgraph
+
+3) $ cd ~/Desktop/binwalk; sudo python3 setup.py install

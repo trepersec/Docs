@@ -1,0 +1,14 @@
+Setting up Squid on pfsense as a cache proxy
+
+1) install and setup pfsense and log into web GUI
+2) System > package manager > available packages > find "Squid"
+3) Services > Proxy Server > Local Cache tab
+4) Change "Hard Disk Cache Size" - I set to 10gb or (10000 mb)	
+5) Change "Maximum Object Size" - I set to 512 mb
+6) Change "Memeory Cache Size" - I set to 512 mb
+7) Ensure "Cache Dynamic Content" check box is checked
+8) Go back to the General tab and enable squid by checking the checkbox, "Enable Squid Proxy"
+9) Disable "Keep Settings/Data", if you're reinstalling or uninstalling, typically you want to have a clean start but if you're upgrading, you might want to leave this checked
+10) Enable "Transparent HTTP Proxy"  
+11) Check "Enable Access Logging"
+12) [Optional] Change Hostname - if changed, make sure to change the email to match the hostname. Ex: hostname = localhost; email: admin@localhost

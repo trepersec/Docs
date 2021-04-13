@@ -1,0 +1,49 @@
+Simple webserver setup - xubuntu
+source: https://www.digitalocean.com/community/tutorials/how-to-install-the-apache-web-server-on-ubuntu-16-04
+
+~~~ After building the xubuntu. I got an error but removed a package to fix it ~~~~
+cause: sudo apt update
+
+error message:
+Aborted (core dumped)
+Reading package lists... Done
+E: Problem executing scripts APT::Update::Post-Invoke-Success 'if /usr/bin/test -w /var/cache/app-info -a -e /usr/bin/appstreamcli; then appstreamcli refresh > /dev/null; fi'
+E: Sub-process returned an error code
+
+fix: sudo apt remove libappstream3
+source fix: https://askubuntu.com/questions/942895/e-problem-executing-scripts-aptupdatepost-invoke-success
+
+
+Steps:
+0)	apt update && apt upgrade	# update and upgrade system
+0.1)sudo -s						# elevate privileges
+1)	sudo apt-get install apache2 # installing apache
+2)	ufw allow 'Apache Full"		# allowing profile that opens port 80 & 443
+3)	ufw enable					# enables the firewall
+3.1)ufw status					# do this to check that the firewall is up and running with the two new rules
+
+~~~will now setup virtual hosts to access the website with an resolable name address~~~
+source: https://www.digitalocean.com/community/tutorials/how-to-set-up-apache-virtual-hosts-on-ubuntu-16-04
+
+4) $ sudo mkdir -p /var/www/badstuff.com/public_html
+5) $ sudo chown -R $USER:$USER /var/www/badstuff.com/public_html
+6) $ sudo chmod -R 755 /var/www
+~provide page content~
+7) $ nano /etc/apache2/apache2.conf
+7.1) append the following immediately after the <Directory ___> </Directory> section
+<Directory /var/www/html>
+	Options +Indexes
+</Directory>
+8) $ sudo cp /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/badstuff.com.conf
+9) nano /etc/apache2/sites-available/badstuff.com.conf
+9.1) Adjust the file to reflect your requirements
+<VirtualHost *:80>
+    ServerAdmin admin@badstuff.com
+    ServerName badstuff.com
+    ServerAlias www.badstuff.com
+    DocumentRoot /var/www/badstuff.com/public_html
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+10) a2ensite badstuff.com.conf
+11) a2ensite 000-default.conf

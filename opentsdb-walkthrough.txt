@@ -1,0 +1,84 @@
+OpenTSDB walkthrough on Ubuntu
+Source: http://opentsdb.net/docs/build/html/installation.html#id1
+
+0) Zookeeper is required so a separate guide will be referenced to set this up since it's only mentioned in the official documentation that it should be up and running
+Source: https://medium.com/@ryannel/installing-zookeeper-on-ubuntu-9f1f70f22e25
+
+0.1) Install java
+# sudo apt-get install default-jre
+
+0.2) Create a user
+# sudo adduser hadoop
+
+0.3) Create Data Directory
+# sudo mkdir -p /data/zookeeper; sudo chown -R hadoop:hadoop /data
+
+0.4) Download Zookeeper
+- go to https://www.apache.org/dyn/closer.cgi/zookeeper/ and choose your mirror and place it in /opt
+# cd /opt
+# sudo tar -xvf zookeeper-3.4.12.tar.gz
+# sudo chown hadoop:hadoop -R  zookeeper-3.4.12
+
+0.5) Configure Hadoop
+# su hadoop
+
+# bash -c "cat > /opt/zookeeper-3.4.12/conf/zoo.cfg <<EOL
+tickTime=2000
+dataDir=/data/zookeeper
+clientPort=2181
+initLimit=5
+syncLimit=2
+server.1=master:2888:3888
+server.2=slave1:2888:3888
+server.3=slave2:2888:3888
+EOL"
+
+0.6) Set the node ids (in this case, just the master node)
+# bash -c echo ‘1’ >> /data/zookeeper/myid
+
+- If you get an error saying: "'1': "echo: command not found", I removed the double quotes before echo and at the end of the line.
+
+0.7) Start Zookeeper
+# bash /opt/zookeeper-3.4.12/bin/zkServer.sh start
+
+0.7.1) [OPTIONAL] Debug Zookeeper - run it in the foreground so you can watch the output directly.
+- In a separate terminal
+# su Hadoop
+# bash /opt/zookeeper-3.4.12/bin/zkServer.sh start-foreground
+
+1) Download hbase
+# sudo add-apt-repository ppa:webupd8team/java
+# sudo apt-get update
+# sudo apt-get install oracle-java8-installer
+# sudo apt-get install oracle-java8-set-default
+
+- Go to http://apache.dattatec.com/hbase/stable/ and download latest bin folder
+# tar -xzf hbase-1.1.5-bin.tar.gz
+
+-Edit config file conf/hbase-site.xml and set the following parameters
+<configuration>
+<property>
+    <name>hbase.rootdir</name>
+    <value>file:///home/home/hbase</value>
+</property>
+<property>
+    <name>hbase.zookeeper.property.dataDir</name>
+    <value>/home/home/zookeeper</value>
+</property>
+</configuration>
+
+#cd /usr/lib/jvm/<tab>
+-Note the java8 location
+# vi ~/.bashrc
+- Append the following:
+export JAVA_HOME="/usr/lib/jvm/java-8-oracle/"
+export COMPRESSION=NONE
+export HBASE_HOME=/home/<user>/Desktop/hbase-1.2.6.1 #or where else the downloaded directory is
+- restart
+- # echo $JAVA_HOME
+
+# ~/Desktop/hbase-1.2.6.1/bin/start-hbase.sh
+# 
+
+*Notes*
+Could not finish building the file. It's a preconfigured source builder and ran into so many errors that it takes time to go through each one.

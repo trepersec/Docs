@@ -1,0 +1,17 @@
+Bro install and configure
+
+Ubuntu
+
+1) Download prerequistes:
+
+	sudo apt-get install cmake make gcc g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev libgeoip1 sendmail curl libpcap-devtcmalloc-minimal4 libjemalloc1 libcaf-core0.13.2
+
+2) Install source via git:
+	cd [directory you want bro in]
+	git clone --recursive git://git.bro.org/bro
+
+3) Build and install from source:
+	1. cd ./Bro
+	2. sudo ./configure
+	3. sudo make
+	4. sudo make install

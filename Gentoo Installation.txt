@@ -1,0 +1,77 @@
+gentoo setup:
+source(s):
+1. https://wiki.gentoo.org/wiki/Handbook:AMD64/Full/Installation
+2. https://www.tecmint.com/gentoo-linux-installation-guide/
+3. https://www.tecmint.com/gentoo-linux-installation-guide-part-2/
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1) download iso and burn to usb/dvd
+2) install and boot to live GUI
+3) setup internet
+4) set up accounts
+	- passwd root
+	- useradd -m -G users simonhawk
+		- passwd simonhawk
+5) set up paritions via parted
+#note* use GPT for linux systems, MBR for windows. GPT is 64bit while MBR is 32bit but Windows only likes MBR. MBR also has compatability issues with UEFI since it only likes legacy BIOS
+	- parted -a optimal /dev/sda
+	- mklabel gpt
+	- print
+		- remove any partitions by: rm <partition #>
+	- unit MB
+	- mkpart primary 1 3 #GRUB/BIOS boot partition only needs 1-2MB so we gave it 2
+	- name 1 grub
+	- set 1 bios_grub on
+	- mkpart primary 3 131 #boot partition that only requires 128 MB so we gave it 128
+	- name 2 boot
+	- mkpart primary 131 1131 #swap space requires at least 512MB but we gave it 1GB
+	- name 3 swap
+	- mkpart primary 1131 -1 #number 1 is used to represent the end of the file. This is the root partition so we gave it the rest of the space.
+	- name 4 root	
+	- quit
+6) mount newly created partitions
+	- mkfs.ext2 /dev/sda2
+	- mkfs.ext4 /dev/sda4
+	- mkswap /dev/sda3
+	- swapon /dev/sda3
+	- mount /dev/sda4 /mnt/gentoo
+	- mkdir /mnt/gentoo/boot
+	- mount /dev/sda2/ /mnt/gentoo/boot
+7) integrated gentoo stage 3
+	- sync time first
+		- ntpd -q g
+		- date #make sure this time is accruate. if not......
+		- date MMDDhhmmYYYY   ##(Month, Day, hour, minute and Year) to manually set
+	- cd /mnt/gentoo
+	- links http://www.gentoo.org/main/en/mirrors.xml
+		- navigate to the downloads page to download the amd64 stage3 compressed file
+	- tar xpf stage3-*.tar.{bz2,xz} --xattrs-include='*.*' --numeric-owner #{bz2,xz} choose one or the other but not both
+8) Configure Gentoo Installation
+	- vi /mnt/gentoo/etc/portage/make.conf
+	- #make sure the following is in the file:
+		CFLAGS="-O2  -pipe"
+		# Use the same settings for both variables
+		CXXFLAGS="${CFLAGS}"
+	- mirrorselect -i -r -o >> /mnt/gentoo/etc/portage/make.conf
+		- select closest one, generally "USA: any availabe mirror" is suitable
+	- mkdir --parents /mnt/gentoo/etc/portage/repos.conf
+	- cp /mnt/gentoo/usr/share/portage/config/repos.conf /mnt/gentoo/etc/portage/repos.conf/gentoo.conf
+	- cat /mnt/gentoo/etc/portage/repos.conf/gentoo.conf #verify it's not empty, reference https://wiki.gentoo.org/wiki/Handbook:AMD64/Full/Installation#Chrooting for clarity
+	- cp --dereference /etc/resolv.conf /mnt/gentoo/etc/
+9) Installing Gentoo
+	- mount --types proc /proc /mnt/gentoo/proc 
+	- mount --rbind /sys /mnt/gentoo/sys
+	- mount --make-rslave /mnt/gentoo/sys
+	- mount --rbind /dev /mnt/gentoo/dev
+	- mount --make-rslave /mnt/gentoo/dev
+	- chroot /mnt/gentoo /bin/bash
+	- source /etc/profile 
+	- export PS1="(chroot) ${PS1}"
+	- mkdir /usr/portage
+	- emerge-webrsync
+		- # I got an error about "gentoo "/etc/portage/make.conf", line 20: invalid variable name 'sync-uri'" which is apparently because the "emerge --sync" command that references the "sync-uri" command in the /etc/portage/make.conf file is deprecated. So I went in and commented out that line and the error went away and I could continue with future configurations.
+	- eselect profile list
+	- select profile set <profile #> #choose one that looks like "default/linux/amd64/17.0/desktop/plasma (stable)"
+	- emerge --ask --update --deep --newuse @world
+	-
+
+		

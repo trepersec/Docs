@@ -1,0 +1,5 @@
+CentOS 7 
+
+Install GUI:
+    - # yum -y groups install "GNOME Desktop" 
+    - startx 
