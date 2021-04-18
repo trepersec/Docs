@@ -1,0 +1,14 @@
+IIS - enable HTTP-Strct-Transport-Security (HSTS) and redirect http to https
+
+Source-  https://www.xolphin.com/support/IIS_FAQ/IIS_-_Configuring_HTTP_Strict_Transport_Security
+
+1. Open the Internet Information Services (IIS) Manager via Start → Administrative Tools → IIS Manager
+2. Click on HTTP Response Headers.
+    - Click on Add... in the Actions panel
+        Name: Strict-Transport-Security
+        Value: max-age=31536000
+
+3. Click on HTTP Redirect.
+    - Check the Redirect box and enter the target URL (HTTPS). Set the status to permanent redirect (301)
+
+    https://subca-01.admin.net/certssrv

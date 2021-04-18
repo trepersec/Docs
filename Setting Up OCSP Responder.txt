@@ -1,0 +1,26 @@
+Setting Up OCSP Responder
+
+Guide - https://www.tech-coffee.net/public-key-infrastructure-part-8-ocsp-responder/
+
+Prerequesites:
+- Have a CA
+
+1. On the CA, open PowerShell as admin to configure CRL values:
+    -   certutil -setreg CA\CRLPeriodUnits 6
+        certutil -setreg CA\CRLPeriod "Days"
+        certutil -setreg CA\CRLOverlapUnits 2
+2. Install the server role, "Online Responder" under Active Directory Certificate Services (<30s)
+3. After the initial installation, you must follow the configuration wizard: authenticate > select the "Online Responder" role > and confirm/configure (<30s)
+4. Open the new role, Online Responder Management for further configuration
+    - right-click "Revocation Configuration" > select "Add Revocation Configuration"
+    - Follow the wizard: 
+        Getting started.. - Next
+        Name the Revocation Configuration - e.g. "SubCA Revocation Configuration"
+        Select CA Certificate.. - import accordingly
+        Choose CA Certificate.. - Select the appropriate certificate
+        Select Signing Certificate - Automatically select a signing certificate > check the checkbox > select the CA and the associated template
+        Revocation Provided - It should automatically populate. This could error if you import the wrong certificate during "Choose CA Certificate". (e.g. I choose local certificate store and there are 2 different options when I reach the "Choose CA Certificate" phase, one will fail, the other will work.)
+        Finish
+    - Under "Revocation Configuration" right-click the newly created entry > Edit Properties
+        - Select the Signing tab > Adjust the Hash algorithm to anything above SHA1 (e.g. SHA256) > OK
+    

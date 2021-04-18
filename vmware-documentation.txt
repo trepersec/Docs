@@ -1,0 +1,4 @@
+VMware stuff:
+
+https://www.unixarena.com/2019/07/vmware-vsphere-how-to-change-vcsa-6-x-ip-address.html/
+How to change VCSA IP address = console > ALT + F1 > login > /opt/vmware/share/vami/vami_config_net

@@ -1,0 +1,78 @@
+Uploading Certificate to WSUS
+
+
+1. Generate the CSR, private key, and retrieve the new server's public certificate and root ca chain from the CA (DER format or BASE64/PEM is fine) > Convert the server's public ceritificate to pfx to upload to the Windows Server
+    - Linux
+        - openssl req -nodes -sha256 -out /tmp/request.csr -newkey rsa:2048 -keyout /tmp/serverkey.key -extensions v3_req -subj "/C=US/ST=[State]/L=[City]/O=[Org]/OU=[OU]/CN=[FQDN]" -reqexts SAN -config <(cat /etc/pki/tls/openssl.cnf < (printf "[SAN]\nsubjectAltName=IP:[IPaddr],DNS:[FQDN],DNS:[FQDN].domain.com))
+    - Windows
+        - openssl req -nodes -sha256 -out request.csr -newkey rsa:2048 -keyout serverkey.key -extensions v3_req -subj "/C=US/ST=[State]/L=[City]/O=[Org]/OU=[OU]/CN=[FQDN]" -reqexts SAN -config openssl_windows.cnf
+        
+        - contents of openssl_windows.cnf:
+            [ v3_req ]
+            # Extensions to add to a certificate request
+            basicConstraints = CA:FALSE
+            keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+
+            [ req ]
+            default_bits            = 2048
+            default_md              = sha256
+            default_keyfile         = privkey.pem
+            distinguished_name      = req_distinguished_name
+            attributes              = req_attributes
+            x509_extensions         = v3_ca # The extentions to add to the self signed cert
+
+            [ req_distinguished_name ]
+            countryName                     = Country Name (2 letter code)
+            countryName_default             = US
+            countryName_min                 = 2
+            countryName_max                 = 2
+            stateOrProvinceName             = State or Province Name (full name)
+            stateOrProvinceName_default     = Massachusetts
+            localityName                    = Locality Name (eg, city)
+            localityName_default            = Cambridge
+            0.organizationName              = Organization Name (eg, company)
+            0.organizationName_default      = Massachusetts Institute of Technology
+            # we can do this but it is not needed normally :-)
+            #1.organizationName             = Second Organization Name (eg, company)
+            #1.organizationName_default     = World Wide Web Pty Ltd
+            organizationalUnitName          = OU
+            organizationalUnitName_default  = Student Information Processing Board
+            commonName                      = Common Name (eg, your name or your server\'s hostname)
+            commonName_max                  = 64
+            emailAddress                    = Email Address
+            emailAddress_max                = 64
+            emailAddress_default            = scripts@mit.edu
+
+            [ req_attributes ]
+            challengePassword               = A challenge password
+            challengePassword_min           = 4
+            challengePassword_max           = 20
+            unstructuredName                = An optional company name
+
+            [SAN]
+            # Needed for browsers that ignore the Common Name field (e.g. Google Chrome)
+            subjectAltName                  = @alt_names
+
+            [alt_names]
+            IP                              = 192.168.1.1
+            DNS.1                           = hostname1
+            DNS.2                           = hostname1.domain.com
+    
+    - convert from BASE64 to pfx
+        - openssl pkcs12 -export -out certificate.pfx -inkey serverkey.key -in server-cert.cer
+
+2. Import the server certificate into the personal section
+    - confirm by viewing the certificate (run > certlm.msc > Personal)
+3. Import the root/subordinate CA's into the appropriate section
+
+4. Open IIS >  select the server name > select server certificates > the certificate should be present by default
+Within IIS, find and select the website (i.e. WSUS Administration) > Then select Bindings on the right >  edit https > attach the cert
+Within IIS, select the drown-down menu under WSUS Administration > Select ApiRemoting30 > Select SSL Settings > Select the "Require SSL" checkbox > Select Apply on the right > repeat the same settings for ClientWebService, DSSAuthWebService, ServerSyncWebService, SimpleAuthWebService
+
+Open CMD as Admin
+cd "C:\Program Files\Update Services\Tools\"
+.\WsusUtil configuressl [fqdn of server]
+    - e.g. .\WsusUtil configuressl wsus.domain.com
+    - Output should be https://*:8531 NOT http://*:8530. Go back and repeat the settings above
+
+Restart the server

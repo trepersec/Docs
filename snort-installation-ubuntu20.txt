@@ -1,0 +1,140 @@
+Sources:
+ - https://kifarunix.com/install-and-configure-snort-3-nids-on-ubuntu-20-04/
+ - https://snort.org/downloads/snortplus/snort_user.html
+ - https://curesec.com/blog/article/blog/Installing-Pulledpork-for-Snort-83.html
+ - https://www.snort.org/oinkcodes
+ - snort3 UPDATED doc - https://github.com/snort3/snort3/blob/master/doc/reference/snort_reference.text
+    - Also found /usr/local/share/doc/snort/snort_reference.text
+
+1) Update!
+    $ sudo apt-get update && sudo apt-get dist-upgrade -y
+2) Create working dirs
+    $ mkdir ~/snort_src; cd ~/Desktop/snort_src
+3) install software!
+    $ sudo apt install build-essential ethtool libpcap-dev libpcre3-dev libnet1-dev zlib1g-dev luajit hwloc libdnet-dev libdumbnet-dev bison flex liblzma-dev openssl libssl-dev pkg-config libhwloc-dev cmake cpputest libsqlite3-dev uuid-dev libcmocka-dev libnetfilter-queue-dev libmnl-dev autotools-dev libluajit-5.1-dev libunwind-dev -y
+    $ cd ~/Desktop/snort_src; git clone https://github.com/snort3/libdaq.git; cd libdaq; ./bootstrap; ./configurel; make; sudo make install
+    $ cd ~/Desktop/snort_src; wget https://github.com/gperftools/gperftools/releases/download/gperftools-2.8/gperftools-2.8.tar.gz; tar xzf gperftools-2.8.tar.gz; cd gperftools-2.8/; ./configure; make; sudo make install
+    $ cd ~/Desktop/snort_src; git clone git://github.com/snortadmin/snort3.git; cd snort3/; ./configure_cmake.sh --prefix=/usr/local --enable-tcmalloc; cd build; make; sudo make install; sudo ldconfig;
+4) test snort
+    $ /usr/local/bin/snort -V
+5) Enable promiscuous mode on monitored interface
+    $ sudo ip link set dev enp3s0 promisc on
+6) Prevent truncating large (1518+ bytes) packets
+    $ ethtool -K enp3s0 gro off lro off
+7) Establish persistence for these adjustments across reboots
+    $ sudo vi /etc/systemd/system/snort3-nic.service
+        [Unit]
+        Description=Set Snort 3 NIC in promiscuous mode and Disable GRO, LRO on boot
+        After=network.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/sbin/ip link set dev enp3s0 promisc on
+        ExecStart=/usr/sbin/ethtool -K enp3s0 gro off lro off
+        ExecStart=/usr/sbin/ip link set dev enx0050b6293afd promisc on
+        ExecStart=/usr/sbin/ethtool -K enx0050b6293afd gro off lro off
+        TimeoutStartSec=0
+        RemainAfterExit=yes
+
+        [Install]
+        WantedBy=default.target
+    $ sudo systemctl daemon-reload
+    $ sudo systemctl enable --now snort3-nic.service
+8) Install rules
+    $ mkdir /usr/local/etc/rules; cd /usr/local/etc/rules; wget https://www.snort.org/downloads/community/snort3-community-rules.tar.gz; tar xzf snort3-community-rules.tar.gz; 
+    $ sudo vi /usr/local/etc/snort/snort.lua
+        - Adjust HOME_NET = '192.168.0.0/24,10.0.30.0/30', EXTERNAL_NET = 'any'
+        - define rule location
+            ips =
+            {
+                -- use this to enable decoder and inspector alerts
+                --enable_builtin_rules = true,
+
+                -- use include for rules files; be sure to set your path
+                -- note that rules files can include other rules files
+                include = '/usr/local/etc/rules/snort3-community-rules/snort3-community.rules'
+            }
+9) Install OpenAppID (resolves apps like Facebook, netflix, etc.)
+    $ cd ~/snort_src; wget https://www.snort.org/downloads/openappid/15607 -O OpenAppId-15607.tgz; tar -xzvf OpenAppId-12159.tgz; sudo cp -R odp /usr/local/lib/
+        - Go to https://www.snort.org/downloads for the latest
+    $ sudo vi /usr/local/etc/snort/snort.lua
+        - define location
+            appid =
+            {
+                -- appid requires this to use appids in rules
+                --app_detector_dir = 'directory to load appid detectors from'
+                app_detector_dir = '/usr/local/lib',
+                log_stats = true,
+
+            }
+    $ mkdir /var/log/snort; snort -c /usr/local/etc/snort/snort.lua
+
+10) Test snort
+    $ sudo mkdir /usr/local/etc/rules
+    $ sudo vi /usr/local/etc/rules/local.rules
+        alert icmp any any -> $HOME_NET any (msg:"ICMP connection test"; sid:1000001; rev:1;)
+    $ snort -c /usr/local/etc/snort/snort.lua -R /usr/local/etc/rules/local.rules
+        - test syntax
+    $ sudo snort -c /usr/local/etc/snort/snort.lua -R /usr/local/etc/rules/local.rules -i enp3s0 -i enx0050b6293afd -z 2 -A alert_fast -s 65535 -k none
+    - Ping snort    
+11) logging
+    $ sudo vi /usr/local/etc/snort/snort.lua
+        alert_fast = { 
+        file = true, 
+        packet = false,
+        limit = 10,
+        }
+    $ snort -c /usr/local/etc/snort/snort.lua
+        - check for errors
+    $ sudo mkdir /var/log/snort
+    $ sudo snort -c /usr/local/etc/snort/snort.lua -R /usr/local/etc/rules/local.rules -i enp3s0 -i enx0050b6293afd -z 2 -s 65535 -k none -l /var/log/snort/
+        - test ping again
+    $ sudo tail /var/log/snort/alert_fast.txt
+    $ sudo vi /usr/local/etc/snort/snort.lua
+        ips =
+        {
+            -- use this to enable decoder and inspector alerts
+            -- enable_builtin_rules = true,
+
+            -- use include for rules files; be sure to set your path
+            -- note that rules files can include other rules files
+            include = '/usr/local/etc/rules/snort3-community-rules/snort3-community.rules',
+            include = '/usr/local/etc/rules/local.rules',
+        }
+12) Snort service
+    $ sudo useradd -r -s /usr/sbin/nologin -M -c SNORT_IDS snort
+    $ sudo vi /etc/systemd/system/snort3.service
+        [Unit]
+        Description=Snort 3 NIDS Daemon
+        After=syslog.target network.target
+
+        [Service]
+        Type=simple
+        ExecStart=/usr/local/bin/snort -c /usr/local/etc/snort/snort.lua -s 65535 -k none -l /var/log/snort -D -i enp3s0 -i enx0050b6293afd -z 2 -m 0x1b -u snort -g snort
+
+        [Install]
+        WantedBy=multi-user.target
+    $ sudo systemctl daemon-reload
+    $ sudo chmod -R 5775 /var/log/snort
+    $ sudo chown -R snort:snort /var/log/snort
+    $ sudo systemctl enable --now snort3
+    $ systemctl status snort3
+
+13) Setup PulledPork for automatic rule updates
+    $ cd ~/snort_src
+    $ git clone https://github.com/shirkdog/pulledpork.git
+    $ sudo apt install libcrypt-ssleay-perl liblwp-protocol-https-perl -y
+    $ sudo mkdir /usr/local/etc/pulledpork; cd ~/snort_src/pulledpork; sudo cp -r etc/ /usr/local/etc/pulledpork
+    $ sudo vi /etc/pulledpork/pulledpork.conf
+        rule_url=https://www.snort.org/reg-rules/|snortrules-snapshot.tar.gz|fd8fbd216b846906b220961b0e28d7093f0e2a5d
+        rule_path=/usr/local/etc/rules/snort.rules
+        local_rules=/usr/local/etc/rules/local.rules
+        block_list=/usr/local/etc/rules/iplists/default.blocklist
+        IPRVersion=/usr/local/etc/rules/iplists
+
+    $ sudo cp ~/snort_src/pulledpork/pulledpork.pl /usr/local/bin/pulledpork.pl
+    $ sudo mkdir /usr/local/etc/rules/iplists/
+    $ /usr/bin/perl /usr/local/bin/pulledpork.pl -c /etc/pulledpork/pulledpork.conf
+    
+14) Clean up
+    $ sudo rm -rf ~/source_src

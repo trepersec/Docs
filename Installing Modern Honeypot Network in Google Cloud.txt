@@ -1,0 +1,31 @@
+Installing Modern Honeypot Network on Google Cloud
+
+1. Setup VM instance (Ubuntu 18.04) > open up port 10000 (Open navigation pane > find VPC Networks >  Firewall > Create rule > name it, set targets to "all instances in the network", enter external/internal ipv4 of sensor(s), select tcp checkbox and add 10000, create)
+2.
+sudo apt-get update && sudo apt-get upgrade -y
+sudo apt install git -y
+cd /opt/
+sudo git clone https://github.com/pwnlandia/mhn.git
+cd mhn/
+sudo ./install.sh
+3. After 30 minutes or so.. Note the credentials
+email/login - apprentice@local
+password - [pass]
+server base url - http://192.168.1.1
+honeymap url - http://192.168.1.1:3000
+Path for log file ["/var/log/mhn/mhn.log"]
+4. Now wait another 45-50 minuites. You're done!
+5. Connect to the web UI 
+    - get the ip - curl ipinfo.io/ip
+    - http://192.168.1.1
+    - login with the credentials entered earlier
+6. Deploy another ubuntu 18.04 VM in google cloud
+7. Deploy a sensor
+    - Select the deploy tab
+    - Select Ubunut/Raspberry Pi - Dionaea
+    - Copy the deploy command and paste in the sensor (other ubuntu VM created) (~7min)
+8. retrieve data from sensors for offline analysis
+    - log into mhn server
+    - mongoexport --db mnemosyne --collection session > session.json
+    - truncate --size="<5M" session.json
+    - scp mhn-admin.us-central1-f.mhn-admin:~/session.json ~/session.json

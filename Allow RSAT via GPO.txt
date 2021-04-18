@@ -1,0 +1,5 @@
+Allow RSAT via GPO (Win 10 ver 1809<)
+
+1. Computer Configuration\Administrative Templates\System\Specify settings for optional component installation and component repair 
+2. Point to WSUS and disable Windows Update
+3. Hosts will be allowed to download via Windows Settings > Apps > Apps & Features > Optional Features > Add a feature > find "RSAT"

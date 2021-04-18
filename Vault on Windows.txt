@@ -1,0 +1,83 @@
+Vault on Windows
+
+1. Download, unzip, and installation is done!
+2. Create a directory (e.g. "C:\Program Files\Vault 1.6.0") and store the vault exectuable 
+3. Open up system properties (i.e. Open Run > sysdm.cpl) > Select the Advanced tab > Environment variables > 
+    > Find the"Path" under System variables > Edit > New > C:\Program Files\Vault 1.6.0\ > OK > OK > OK
+4. Open a new terminal and type "vault" to see the help output
+# Optional Testing Phase
+5. Run the dev server
+    $ vault server -dev
+6. In a separate PowerShell instance
+    $ $env:VAULT_ADDR="http://127.0.0.1:8200"
+    $ $env:VAULT_TOKEN="s.86ilnPnZVnukC9L9iEvvNDnN" # This is a unique token called the  "Root Token" found in the PowerShell instance where you ran "vault server -dev"
+7. Verify vault is running
+    $ vault status
+8 submit a password
+    $ vault kv put secret/hello foo=test
+        - secret/hello = directory the password keypair (foo/test) is saved
+        - instead of submitting in the shell and leaving it available in the history, here is another option
+        $ vault kv put secret/hello foo=-   # use a '-' (dash) to push to the next line, which will not be saved
+        world       # enter the password then the <ENTER> key
+        ^Z          # Don't type this, but select <CTRL> + Z and then select the <ENTER> key to signify EOF in PowerShell
+9. Access the UI @ 127.0.0.1:8200/ui > login with tokne via Root token > play around
+
+# Setting up Production server 
+10. Create a configuration file (config.hcl) and place the following (adjust accordingly):
+    storage "raft" {
+    path    = "C:\\vault\\data"
+    node_id = "node1"
+    }
+
+    listener "tcp" {
+    address     = "127.0.0.1:8200"
+    tls_disable = 1
+    }
+
+    api_addr = "http://127.0.0.1:8200"
+    cluster_addr = "https://127.0.0.1:8201"
+    ui = true
+    disable_mlock = true
+Note: mlock is disabled because it is not supported in Windows, but make sure this is enabled on Linux systems for better security. We're doing it here to get rid of the warning in Windows.
+Note2: Notice the double \\ in the path. This is needed to escape the character to read the path.
+
+11. Create the directory C:\vault\data\ or choose where you wish to store vault data
+Note: SSL/TLS will be setup later
+
+12. Unset any prior tokens
+    $ Remove-Item Env:\VAULT_ADDR
+    $ Remove-Item Env:\VAULT_TOKEN
+
+13. Run it.
+    $ vault server -config="C:\vault\config.hcl"
+    Note: Save the unseal key and root token offline safely. They will be needed throughout the like of managing vault
+14. Unseal it (the process of enabling vault after a restart)
+    $ $env:VAULT_ADDR="http://127.0.0.1:8200"
+    $ vault operator init
+
+    Note: you'll get 5 keys. These keys are used to unlock/unseal vault after a restart. 
+    $ $env:VAULT_TOKEN="[INPUT ROOT TOKEN]"
+    $ vault operator unseal
+    [INPUT 3 KEYS]
+15. Login as root (using the root token)
+    $ valut login 
+        - It will login using the root token we set earlier
+
+16. Integrating with Active Directory / LDAP
+    - enable it 
+        $ vault auth enable ldap
+    - Set it up uniquely to your environment
+        $ vault write auth/ldap/config \
+        url="ldap://192.168.88.3","ldap://192.168.88.4" \       # when you have 2 DCs
+        starttls=true \
+        insecure_tls=false \
+        certificate="C:\\rootCAChain.pem" \                     # Root Certificate and intermediate CAs certificates in .PEM / x.509 format (clear-text)
+        upndomain="domiain.com" \
+
+
+Cleaning up / Discontinuing vault / Delete current vault instance
+    - press Ctrl+C to stop the server running in the foreground (or kill and remove the service if you created one)
+    - Delete the encrypted Vault data directory (C:\vault\data)
+    - Clear environment variables
+        $ Remove-Item Env:\VAULT_ADDR
+        $ Remove-Item Env:\VAULT_TOKEN

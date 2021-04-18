@@ -1,0 +1,46 @@
+Akrime/Moloch on Ubuntu20
+Sources:
+ - https://arkime.com
+ - https://raw.githubusercontent.com/arkime/arkime/master/release/README.txt
+
+1) Download latest stable release - https://arkime.com/downloads
+    $ mkdir ~/arkime_src; cd ~/arkime_src;
+    $ wget https://s3.amazonaws.com/files.molo.ch/builds/ubuntu-20.04/moloch_2.7.1-1_amd64.deb
+2) Install
+    $ sudo apt install libjson-perl libyaml-dev -y
+    $ sudo dpkg -i moloch*.deb
+3) Configuration script
+    $ sudo /data/moloch/bin/Configure
+        - list all interfaces separated by semicolon
+        - "no" to not install elasticsearch since it is already installed
+        - elasticsearch addr - http://10.0.30.1:9200
+        - "RANDOM" for password
+        - "yes" for geo files
+4) Setup elasticsearch
+    $ /data/moloch/db/db.pl http://10.0.30.1:9200 init
+5) Add a user
+    $ /data/moloch/bin/moloch_add_user.sh [userid] [user] [password] --admin
+    - userid = what you use to log in
+    - user = display name
+    - I used admin/admin (something simple), then after logging in, I set my real user and delete the temp account. My creds won't be in any logs
+6) Review the configuration file
+    $ sudo vi /data/moloch/etc/config.ini
+        passwordSecret = RANDOM
+        serverSecret=RANDOM
+        viewHost = 10.0.30.1
+        viewURL = https://10.0.30.1:8005
+        packetThreads=2 # set this to at least the number of interfaces being monitored
+6) Start services
+    $ sudo systemctl enable molochcapture.service
+    $ sudo systemctl enable molochviewer.service
+
+    $ sudo systemctl start molochcapture.service
+    $ sudo systemctl start molochviewer.service
+
+7) Log in @ http://10.0.30.1:8005 
+
+Relevant Directories:
+    - PCAPs - /data/moloch/raw
+    - errors logs
+        - sudo less /data/moloch/logs/viewer.log
+        - sudo less /data/moloch/logs/capture.log

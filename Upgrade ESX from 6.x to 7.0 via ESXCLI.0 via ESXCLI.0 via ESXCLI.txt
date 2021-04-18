@@ -1,0 +1,9 @@
+Upgrade ESX from 6.x to 7.0 via ESXCLI
+
+Download offline bundle and store on accessible datastore for the ESX
+
+esxcli software sources profile list -d /vmfs/volumes/..zip
+esxcli system maintenanceMode set --enable true
+esxcli software profile update -p ESXi-7.0.0-15843807-standard -d /vmfs/volumes/..zip (~20s)
+reboot (~3.5m)
+esxcli system maintenanceMode set --enable false

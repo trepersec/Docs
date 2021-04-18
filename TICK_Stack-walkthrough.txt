@@ -27,8 +27,8 @@ Step 2 — Installing InfluxDB and Configuring Authentication
 # sudo systemctl start influxdb
 # systemctl status influxdb #verify it's running
 # influx
-# CREATE USER "pcip" WITH PASSWORD 'pcip' WITH ALL PRIVILEGES
-# show users #very the user "pcip" with the password "pcip" is created with the "true" value set
+# CREATE USER [user] WITH PASSWORD [password] WITH ALL PRIVILEGES
+# show users #verify the user [user] with the password [password] is created with the "true" value set
 # exit
 # sudo vi /etc/influxdb/influxdb.conf
 - Locate the [http] section, uncomment the auth-enabled option, and set its value to true 
@@ -70,7 +70,7 @@ Step 3 — Installing and Configuring Telegraf
 # exit
 # systemctl status telegraf #verify it's running
 [OPTIONAL to see what plugins you have]
-# influx -username 'pcip' -password 'pcip'
+# influx -username [user] -password [password]
 # show databases
 # use telegraf
 # show measurements

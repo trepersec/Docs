@@ -1,0 +1,43 @@
+Uploading Certificate to Windows (RDP)
+
+1. Generate the CSR, private key, and retrieve the new server's public certificate and root ca chain from the CA (DER format or BASE64/PEM is fine) > Convert the server's public ceritificate to pfx to upload to the Windows Server
+    - convert from BASE64 to pfx
+        -openssl pkcs12 -export -out certificate.pfx -inkey serverkey.key -in server-cert.cer
+        - The Export Password is used to protect the file and is required to upload to Windows.
+2. Go to the Certificate authority and open the configuration settings
+    - Right-click certificate template > Manage 
+    - Right-click Computer > Duplicate template
+        - Subject Name tab:
+            - Subject name format = common name
+            - Select DNS name checkbox
+        - General tab:
+            - Adjust validity period accordingly (e.g. 5 years)
+            - Select the checkbox, publish certificate in AD
+            - Set the name (e.g. RemoteDesktopSecure)
+        - Security tab:
+            - Enable read and enroll permissions for the group that is allowed to issue certificates (e.g. Domain Admins)
+        - Extensions tab:
+            - Edit > Delete the 2 default polices (i.e. client & server authen) > Add > New > Name the policy (e.g. Remote Desktop Authentication) > set the OID to 1.3.6.1.4.1.311.54.1.2 > OK > OK > OK > OK
+    - Go back to the Certificate Authority configuration console > Right-click Certificate Templates > New > Certificate Template to Issue > Find and select your newly created template > OK
+3. Create the GPO
+    - Computer Configuration\Policies\Administrative Templates\Windows Components\Remote Desktop Services\Remote Desktop Session Host\Security\Server Authentication Certificate Template 
+        - Enable
+        - Add the template name we created (e.g. RemoteDesktopSecure)
+    - Computer Configuration\Policies\Administrative Templates\Windows Components\Remote Desktop Services\Remote Desktop Session Host\Security\Require use of specific security layer for remote (RDP) connections 
+        - Enable
+        - Set to SSL
+
+4. Update
+5. Restart Remote Desktop Configuration service (RDCS)
+6. [optional] verify certificates in certlm.msc
+    - The new cert should be present in the following locations
+        - Personal > certificates
+        - Remote Desktop > Certificates
+    - The CA Cert should be present in the following location
+        - Trusted Root Certification Authorities > Certificates 
+
+Troubleshooting (RDP Warnings when connecting to host):
+- A revocation check could not be performed for the certificate
+    - ?
+- The certificate or associated chain is invalid (Code: 0x10000)
+    - The CA cert is not installed on the local machine. Download the CA's cert and install it to the local machine.

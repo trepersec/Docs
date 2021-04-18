@@ -1,0 +1,48 @@
+PowerCLI Commands
+
+Connect to VCSA
+    Connect-VIServer -Server vcenter01 -User admin -Password pass
+    or
+    Connect-VIServer -Server vcenter01
+
+Obtain CSV of network information on ALL ESXi hosts
+
+    Get-VMHostNetworkAdapter | select VMhost, Name, IP, SubnetMask, Mac, PortGroupName, vMotionEnabled, mtu, FullDuplex, BitRatePerSec | Export-Csv C:\VMHostNetworkDetails.csv
+
+
+Obtain IP and hostname of ESXi hosts
+    Get-VMHost | select Name, @{N=Hostname";E={$_.NetworkInfo}}
+
+Password attempt across all ESXi hosts
+Set-PowerCLIConfiguration -InvalidCertification Ignore -Scope User -Confirm:$false
+$passwords = password1, password2, password3
+$directory = $($HOME)\Desktop
+Get-vmhost | % {
+    Write-Host "~~~~~~$($_.name)~~~~~~"
+
+    foreach $pass in $passwords
+    {
+        Write-Host "Trying $pass on $($_.name)"
+        $null = connect-viserver $_.name `
+        -user root -password $pass -EA 0
+
+        if (-not($?))
+        {
+            if ( $pass = $passwords[passwords.Count - 1])
+            {
+                Write-Host "All passwords failed." -ForegroundColor Red
+                Add-Content -Path "$($directory)\all-failed.txt" -Value "$($_.name)"
+            }
+            Write-Host "$pass failed." -ForegroundColor Yellow
+        }
+        else
+        {
+            Write-Host "$pass worked on $($_.name)" -ForegroundColor Green
+            Add-Content -Path "$($directory)\$($pass)-works.txt" -Value "$($_.name)"
+            #Disconnect-VIServer -Server $_.name -confirm:$false            # suggested, but was throwing an error
+        }
+
+    }
+}
+
+Disconnect-VIServer -Server * -Force -confirm:$false

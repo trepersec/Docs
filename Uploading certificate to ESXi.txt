@@ -1,0 +1,74 @@
+Uploading certificate to ESXi
+
+1 Within vSphere, selec the VCSA that manages all of the hosts (should be the root in the hosts & clusters section) > Select Configure tab > Select Advanced Settings in the left panel > Select Edit Settings in the top right corner > find vpxd.certmgmt.mode (one of the last pages) > the default is "vmca", set to "custom" and save
+2. Restart vmware vcenter server
+    1)  SSH to vcenter
+        > shell
+        # service-control --restart vmware-vpxd vmware-rhttpproxy vmware-eam
+    2) Go to VCSA:5480 (appliance management)
+        - services > find vmware vcenter server > restart
+3. Generate CSR
+    - Linux
+        - openssl req -nodes -sha256 -out /tmp/request.csr -newkey rsa:2048 -keyout /tmp/serverkey.key -extensions v3_req -subj "/C=US/ST=[State]]/L=[City]/O=[Org]/OU=[OU]/CN=[FQDN]" -reqexts SAN -config <(cat /etc/pki/tls/openssl.cnf < (printf "[SAN]\nsubjectAltName=IP:[IPaddr],DNS:[FQDN],DNS:[FQDN].domain.com))
+    - Windows
+        - openssl req -nodes -sha256 -out request.csr -newkey rsa:2048 -keyout serverkey.key -extensions v3_req -subj "/C=US/ST=[State]]/L=[City]/O=[Org]/OU=[OU]/CN=[FQDN]" -reqexts SAN -config openssl_windows.cnf
+            - contents of openssl_windows.cnf:
+                [ v3_req ]
+                # Extensions to add to a certificate request
+                basicConstraints = CA:FALSE
+                keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+
+                [ req ]
+                default_bits            = 2048
+                default_md              = sha256
+                default_keyfile         = privkey.pem
+                distinguished_name      = req_distinguished_name
+                attributes              = req_attributes
+                x509_extensions         = v3_ca # The extentions to add to the self signed cert
+
+                [ req_distinguished_name ]
+                countryName                     = Country Name (2 letter code)
+                countryName_default             = US
+                countryName_min                 = 2
+                countryName_max                 = 2
+                stateOrProvinceName             = State or Province Name (full name)
+                stateOrProvinceName_default     = Massachusetts
+                localityName                    = Locality Name (eg, city)
+                localityName_default            = Cambridge
+                0.organizationName              = Organization Name (eg, company)
+                0.organizationName_default      = Massachusetts Institute of Technology
+                # we can do this but it is not needed normally :-)
+                #1.organizationName             = Second Organization Name (eg, company)
+                #1.organizationName_default     = World Wide Web Pty Ltd
+                organizationalUnitName          = OU
+                organizationalUnitName_default  = Student Information Processing Board
+                commonName                      = Common Name (eg, your name or your server\'s hostname)
+                commonName_max                  = 64
+                emailAddress                    = Email Address
+                emailAddress_max                = 64
+                emailAddress_default            = scripts@mit.edu
+
+                [ req_attributes ]
+                challengePassword               = A challenge password
+                challengePassword_min           = 4
+                challengePassword_max           = 20
+                unstructuredName                = An optional company name
+
+                [SAN]
+                # Needed for browsers that ignore the Common Name field (e.g. Google Chrome)
+                subjectAltName                  = @alt_names
+
+                [alt_names]
+                IP                              = 192.168.1.1
+                DNS.1                           = hostname1
+                DNS.2                           = hostname1.domain.com
+4. SSH to ESXi to transfer certs
+    - backup the default certs and key
+        # mv /etc/vmware/ssl/rui.key /etc/vmware/ssl/rui.key.bak
+        # mv /etc/vmware/ssl/rui.crt /etc/vmware/ssl/rui.crt.bak
+    - Replace them with the generated certs (copying the same naming convention--rui.key & rui.crt)
+    - restart the services
+        # /etc/init.d/hostd restart
+        # /etc/init.d/vpxa restart
+        # /etc/init.d/hostd status
+        # /etc/init.d/vpxa status

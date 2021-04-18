@@ -1,0 +1,26 @@
+Uploading custom internal SSL certificate and Root CA to VCSA via CLI
+
+1. Generate CSR and obtain the new private key and server certificate. Open WinSCP and transfer them to /etc/vmware-vpx/ssl/vcsa.key and /etc/vmware-vpx/ssl/vcsa.crt
+    - As a precaution, within the subject alternative names field, append the current/old SAN (same case and spelling). To get this exact value via CLI on the VCSA, /usr/lib/vmware-vmafd/bin/vmafd-cli get-pnid --server-name localhost
+    - This is suggested because you could receive the following error if you're on an older build, "Previous MACHINE_SSL_CERT Subject Alternative Name does not match new MACHINE_SSL_CERTIFICATE Subject Alternative Name" error while replacing vCenter Server Machine SSL Certificate (2150267)
+2. Test the certificates,
+    openssl verify -CAfile /etc/vmware-vpx/ssl/root-ca-cert-chain.p7b.cer /etc/vmware-vpx/ssl/vcsa.cer 
+    - if you're receiving any errors, it could be because your formats aren't correct. Download the CA Cert Chain in Base64 then perform the following command and retest,
+        openssl pkcs7 -print_certs -in /etc/vmware-vpx/ssl/root-ca-cert-chain.p7b -out /etc/vmware-vpx/ssl/root-ca-cert-chain.p7b.cer
+3. Log into VCSA CLI (Linux version) > Shell
+4. Run the following command, /usr/lib/vmware-vmca/bin/certificate-manager
+    - Warning: VCSA will be down for ~10 minutes
+5. Select 1, Replace the Machine SSL certificate with a Custom CA Certificate > Login
+6. Select 2, Import custom certificate(s) and key(s) to replace exisitng Machine SSL Certificate
+7. Answer the prompts, 
+    - Custom Certificate: /etc/vmware-vpx/ssl/vcsa.cer
+    - Custom Key: /etc/vmware-vpx/ssl/vcsa.key
+    - Signing Certificate (Root CA Chain): /etc/vmware-vpx/ssl/root-ca-cert-chain.p7b
+    - Continue: Y
+    - Takes <10 minutes to complete and VCSA will temporarily be down! If there is an error, it will rollback which takes 15-20 minutes.
+
+Setting up VCSA as intermediate CA for ESXi servers (restart required)
+1. Have a certificate issued
+
+
+Restart VCSA

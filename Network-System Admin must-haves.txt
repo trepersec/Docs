@@ -1,0 +1,7 @@
+Network-System Admin must-haves:
+
+Policies (logging, account management, passwords, etc.)
+network map/diagram
+ports and protocol list
+IP list
+network device config files

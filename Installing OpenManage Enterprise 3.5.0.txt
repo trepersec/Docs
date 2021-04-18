@@ -1,0 +1,20 @@
+Installing OpenManage Enterprise 3.5.0.60
+
+1. Import into VMware vCenter > Turn on
+2. Accept EULA by pressing TAB 
+3. Keyboard Layout = US
+4. Enter admin password
+5. Go down to set the networking parameters and adjust accordingly
+    - Use TAB to edit the IPv4/6 address info
+    - After finishing adjusting, it'll take ~30s for the settings to apply
+6. Restart all services (~30s)
+7. Adjust the hostname as needed
+8. On your admin workstation, open a browser, and connect to the server via the network credentials set
+    - login credentials are admin/[password entered via text UI]
+9. Initial settings 
+    - NTP
+        - GMT-06:00
+        - Enter NTP server
+        - Apply (~30s) > verify system time
+10. Whether you are migrating from a previous openmanage essentials or not, a discovery must be done to advance.
+*Note* if you ever Ctrl + C, just wait ~30-60s for the text UI to return

@@ -1,0 +1,9 @@
+1. Click the Start Button and type cmd
+2. Right-click the result and select Run as administrator
+3. Type this command and press ENTER: bcdedit /set {current} safeboot minimal (ALT: bcdedit /set safeboot minimal)
+4. Restart the computer and enter BIOS Setup
+5. Change the SATA Operation mode to AHCI from either IDE or RAID
+6. Save changes and exit Setup and Windows will automatically boot to Safe Mode.
+7. Right-click the Windows Start Menu once more. Choose Command Prompt (Admin).
+8. Type this command and press ENTER: bcdedit /deletevalue {current} safeboot (ALT: bcdedit /deletevalue safeboot)
+9. Reboot once more and Windows will automatically start with AHCI drivers enabled.

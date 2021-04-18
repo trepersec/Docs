@@ -1,0 +1,30 @@
+OSSEC on Ubuntu20
+
+1) Install source
+    wget -q -O - https://updates.atomicorp.com/installers/atomic | sudo bash
+2) Update
+    sudo apt update && sudo apt full-upgrade -y
+3) Install
+    a) server
+        sudo apt-get install ossec-hids-server -y
+    b) agent/client
+        sudo apt-get install ossec-hids-agent -y
+4) add agent
+    sudo /var/ossec/bin/manage_agents
+        (A)dd an agent 
+            [fill accordingly]
+        (E)xtract key for an agent
+            Copy the key and paste in the client's GUI and confirm
+5) start it
+    sudo /var/ossec/bin/ossec-control start
+
+
+
+
+
+
+
+    sudo apt-get install build-essential libevent-dev zlib1g-dev libssl-dev -yaml
+    version=$(cat test.txt  | grep -E *pcre2-*.*.tar.gz | sort | tail -n 1 | grep -Pow "pcre2-......tar.gz" | uniq) # finding the correct version
+    wget https://ftp.pcre.org/pub/pcre/$version
+    tar -zxvf $version

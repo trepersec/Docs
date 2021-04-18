@@ -1,0 +1,29 @@
+Atomic Red Team Guide - Attack Emulation
+
+1) installation
+    - https://github.com/redcanaryco/invoke-atomicredteam/wiki/Installing-Atomic-Red-Team
+    - in PowerShell:
+        IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing);
+        Install-AtomicRedTeam -getAtomics
+        notepad $profile # vi, gpedit, or any other text editor
+        Import-Module C:\AtomicRedTeam\invoke-atomicredteam\Invoke-AtomicRedTeam.psd1 -force # or whatever the path to this file is
+2) Display a technique's tests info
+    Invoke-AtomicTest [technique number] -ShowDetailsBrief # lists the available tests for a technique
+    Invoke-AtomicTest T1003 -ShowDetailsBrief
+
+    Invoke-AtomicTest [technique number] -TestNumbers [test number] -ShowDetails # Displays man page as shown on GitHub
+    Invoke-AtomicTest T1003 -TestNumbers 1 -ShowDetails # referencing by number/ID
+    Invoke-AtomicTest T1003 -TestNames "Powershell Mimikatz" -ShowDetails # referencing by name
+
+    # If a test number isn't selected, all tests will be run
+
+3) Running a test
+
+    Invoke-AtomicTest T1485 -TestNumbers 1 -CheckPrereqs # check what requirements are needed prior to successfully executing
+    Invoke-AtomicTest T1485 -TestNumbers 1 -GetPrereqs  # Automated process to fulfill prereqs
+    Invoke-AtomicTest T1485 -TestNumbers 1 -CheckPrereqs # verify everything was successful
+    Invoke-AtomicTest T1485 -TestNumbers 1 # run it
+
+    Invoke-AtomicTest T1016 -TestNumbers 5 -PromptForInputArgs # adjust default parameters
+
+    Invoke-AtomicTest T1003.001 -TestNumbers 2 -Cleanup # remove created files 

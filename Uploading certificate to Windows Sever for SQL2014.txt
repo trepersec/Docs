@@ -1,0 +1,17 @@
+Uploading certificate to Windows Sever (SQL2014)
+
+1. Generate the CSR, private key, and retrieve the new server's public certificate and root ca chain from the CA (DER format or BASE64/PEM is fine) > Convert the server's public ceritificate to pfx to upload to the Windows Server
+    - convert from BASE64 to pfx
+        - openssl pkcs12 -export -out certificate.pfx -inkey serverkey.key -in server-cert.cer
+        - The Export Password is used to protect the file and is required to upload to Windows.
+2. Open mmc.exe > File > add/remove snap-in
+3. Ceritficates > Add > Computer Account > Finish > Local Computer > Finish > OK > Go back to MMC.exe and save it
+4. Open certlm.msc > Right-click Personal > All Tasks > Import...
+5. Certificate Import Wizard > Next > Attach the server's cert obtained from the CA > Next > Next > Finish > Wait <30s for confirmation
+6. Right-click Trusted Root Certification Authorities > Import > Next > Attach Root CA Chain > Next > Next > Finish > Wait <30s for confirmation
+7. Open SQL Server Confirmation Manager > SQL Server Network Configuration  > Right-click Protocols for [instance name] > Properties
+8. Select the Certificate tab > select the drop down menu and find your certificate > OK
+9. Allow permissions to access the certificate
+    - Open the properities for the following folder, "C:\ProgramData\Microsoft\Crypto\RSA\MachineKeys"
+    - Security Tab > Edit > Add > The account name should be something along the lines of "MSSQL$[SQL instance name]" > Save. The exact name can be found in SQL server configuration manager, SQL Server Services, For the SQL Server record, refer to the Log On As column entry. 
+9. Restart the SQL service

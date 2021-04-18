@@ -1,0 +1,11 @@
+Fix computer waking up during hibernation mode - Windows
+
+0) Run the command in command prompt
+  - powercfg /lastwake
+- If it says your ethernet adapter is the wake source, follow the steps below
+
+1) Open device manager
+2) Expand Network Adapters, right click on the network adapter and select Properties. 
+3) Navigate to Power Management tab, and clear the checkbox for Allow this device to wake the computer
+
+Source - https://answers.microsoft.com/en-us/windows/forum/all/network-card-keeps-waking-computer/580e3ef6-09b3-4372-8202-696920892023

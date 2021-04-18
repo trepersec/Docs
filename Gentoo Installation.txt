@@ -9,8 +9,8 @@ source(s):
 3) setup internet
 4) set up accounts
 	- passwd root
-	- useradd -m -G users simonhawk
-		- passwd simonhawk
+	- useradd -m -G users [user]
+		- passwd [user]
 5) set up paritions via parted
 #note* use GPT for linux systems, MBR for windows. GPT is 64bit while MBR is 32bit but Windows only likes MBR. MBR also has compatability issues with UEFI since it only likes legacy BIOS
 	- parted -a optimal /dev/sda

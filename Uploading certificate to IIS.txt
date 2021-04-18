@@ -1,0 +1,17 @@
+Uploading certificate to IIS
+
+
+1. Generate the CSR, private key, and retrieve the new server's public certificate and root ca chain from the CA (DER format or BASE64/PEM is fine) > Convert the server's public ceritificate to pfx to upload to the Windows Server
+    - openssl req -nodes -sha256 -out /tmp/request.csr -newkey rsa:2048 -keyout /tmp/serverkey.key -extensions v3_req -subj "/C=US/ST=[State]/L=[City]/O=[Org]/OU=[OU]/CN=[FQDN]" -reqexts SAN -config <(cat /etc/pki/tls/openssl.cnf < (printf "[SAN]\nsubjectAltName=IP:[IPaddr],DNS:[FQDN],DNS:[FQDN].domain.com))
+
+    - convert from BASE64 to pfx
+        - openssl pkcs12 -export -out certificate.pfx -inkey serverkey.key -in server-cert.cer
+        - The Export Password is used to protect the file and is required to upload to Windows.
+1. Open IIS Manager (inetmgr)
+2. Select the server (not the site) to modify
+3. Find and select Server Certificates
+4. On the right-pane, find and select, "Create Certificate Request..." > Fill accordingly
+5. Set bit length to 2048+
+6. Submit the request to the CA and include the Subject Alternate Names
+    - in MS AD Certificate Services: Ex - san:dns=wsus&ipaddress=192.168.1.1&dns=wsus.domain.com
+
